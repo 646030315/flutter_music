@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:n_music/main/Constants.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class PageMain extends StatefulWidget {
@@ -10,10 +11,6 @@ class PageMain extends StatefulWidget {
 }
 
 class PageMainState extends State<PageMain> {
-  static const int PERMISSION_NONE = 0;
-  static const int PERMISSION_GRANT = 1;
-  static const int PERMISSION_DENY = 2;
-
   int _permissionState = PERMISSION_NONE;
 
   @override
@@ -29,15 +26,16 @@ class PageMainState extends State<PageMain> {
     if (_permissionState == PERMISSION_GRANT) {
       content = "This is page main";
     } else if (_permissionState == PERMISSION_NONE) {
-      content = "需要授权之后才能用";
+      content = WRITE_PERMISSION_LACK_WARN;
     } else {
-      content = "功能不支持或者未授权，请检查";
+      content = PERMISSION_CHECK;
     }
+
     return Center(
         child: InkWell(
-          onTap: _checkPermissions,
-          child: Text(content),
-        ));
+      onTap: _checkPermissions,
+      child: Text(content),
+    ));
   }
 
   /// 权限检测，查看是否需要弹框请求用户权限

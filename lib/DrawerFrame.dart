@@ -1,9 +1,12 @@
 import 'dart:convert';
+import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:n_music/Toast.dart';
 import 'dart:io';
+
+import 'package:n_music/main/Constants.dart';
 
 class DrawerFrame extends StatefulWidget {
   @override
@@ -17,9 +20,48 @@ class DrawerFrameState extends State<DrawerFrame> {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        DrawerHeader(
-          decoration: BoxDecoration(color: Colors.grey),
-          child: Center(child: Text("Drawer header")),
+        Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          height: MediaQuery.of(context).padding.top + 161,
+          child: Stack(
+            children: <Widget>[
+              ConstrainedBox(
+                child: Image.asset(
+                  AVATAR_URI,
+                  fit: BoxFit.cover,
+                ),
+                constraints: BoxConstraints.expand(),
+              ),
+              ClipRect(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(
+                      sigmaX: BLUR_SIGMA_X, sigmaY: BLUR_SIGMA_Y),
+                  child: Container(
+                    color: Colors.white.withOpacity(0),
+                  ),
+                ),
+              ),
+              Center(
+                child: Container(
+                  width: 64,
+                  height: 64,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.all(Radius.circular(32))),
+                  child: CircleAvatar(
+                    radius: 30,
+                    backgroundImage: AssetImage(AVATAR_URI),
+                  ),
+                ),
+              ),
+              Container(
+                margin: const EdgeInsets.only(left: 8, bottom: 8),
+                alignment: Alignment.bottomLeft,
+                child: Text("williscao", style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
         ),
         InkWell(
           onTap: _onHomeTap,
@@ -42,65 +84,14 @@ class DrawerFrameState extends State<DrawerFrame> {
 
   _onHomeTap() {
     // https://qzonestyle.gtimg.cn/aoi/sola/20200225100716_PCSqBR2pS7.png
-    print("start _onHomeTap");
-    _getIPAddress();
-    print("end _onHomeTap");
-  }
-
-  Future<int> _asyncExecution() async{
-    final result = await _syncExecution();
-    return result;
-  }
-
-  _syncExecution() {
-    print("before _syncExecution");
-    final currentTime = DateTime.now().millisecondsSinceEpoch;
-    while (true) {
-      if (DateTime.now().millisecondsSinceEpoch - currentTime > 1000) {
-        break;
-      }
-    }
-    print("after _syncExecution");
-    return 10;
-  }
-
-  Future<String> _getIPAddress() async {
-    print("start _getIPAddress");
-    var url = 'https://httpbin.org/ip';
-    var httpClient = new HttpClient();
-
-    String result;
-    try {
-      var request = await httpClient.getUrl(Uri.parse(url));
-      var response = await request.close();
-      if (response.statusCode == HttpStatus.OK) {
-        var json = await response.transform(utf8.decoder).join();
-        var data = jsonDecode(json);
-        result = data['origin'];
-      } else {
-        result =
-            'Error getting IP address:\nHttp status ${response.statusCode}';
-      }
-    } catch (exception) {
-      result = 'Failed getting IP address';
-    }
-
-    print(result);
-
-
-//    final currentTime = Future.delayed(Duration(seconds: 2), () => print("print after delay"));
-
-    print("end _getIPAddress");
-    return "";
+    Toast.show(context, "_onHomeTap tap");
   }
 
   _onMessageTap() async {
-    String result = await _getIPAddress();
-    Toast.show(context, "_onMessageTap my ip value $result");
+    Toast.show(context, "_onMessageTap tap");
   }
 
   _onPhotoTap() async {
-    String result = await _getIPAddress();
-    Toast.show(context, "_onPhotoTap my ip value $result");
+    Toast.show(context, "_onPhotoTap tap");
   }
 }
