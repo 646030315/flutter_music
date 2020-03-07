@@ -43,18 +43,28 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      height: double.infinity,
-      child: ListView.builder(
-          itemCount: datas.length,
-          itemBuilder: (context, index) {
-            return _getItemView(context, index);
-          }),
+      child: Stack(
+        children: <Widget>[
+          Divider(
+            height: 1,
+            color: Color(0xFFFAFAFA),
+          ),
+          Container(
+            margin: EdgeInsets.only(top: 1),
+            child: ListView.builder(
+                itemCount: datas.length,
+                itemBuilder: (context, index) {
+                  return _getItemView(context, index);
+                }),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _getItemView(BuildContext context, int index) {
     return Container(
+      color: Colors.white,
       height: 80,
       alignment: Alignment.center,
       child: ListTile(
@@ -68,7 +78,7 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
         ),
         trailing: Icon(Icons.add),
         leading: CircleAvatar(
-          radius: 20,
+          radius: 24,
           backgroundImage: AssetImage(AVATAR_URI),
         ),
       ),
