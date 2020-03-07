@@ -10,14 +10,22 @@ class PageMain extends StatefulWidget {
   }
 }
 
-class PageMainState extends State<PageMain> {
+class PageMainState extends State<PageMain>
+    with SingleTickerProviderStateMixin {
   int _permissionState = PERMISSION_NONE;
+
+  int _selectedIndex = 0;
 
   @override
   void initState() {
     super.initState();
     // 模拟耗时任务加载
     new Future.delayed(const Duration(seconds: 3), () => _checkPermissions());
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
@@ -31,11 +39,19 @@ class PageMainState extends State<PageMain> {
       content = PERMISSION_CHECK;
     }
 
-    return Center(
-        child: InkWell(
-      onTap: _checkPermissions,
-      child: Text(content),
-    ));
+    if (_permissionState == PERMISSION_GRANT) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: <Widget>[
+          Divider(
+            height: 1,
+            color: Color(0xFFE0E0E0),
+          ),
+        ],
+      );
+    } else {
+      return Text(WRITE_PERMISSION_LACK_WARN);
+    }
   }
 
   /// 权限检测，查看是否需要弹框请求用户权限
@@ -75,5 +91,17 @@ class PageMainState extends State<PageMain> {
     setState(() {
       _permissionState = granted ? PERMISSION_GRANT : PERMISSION_DENY;
     });
+  }
+
+  _onTabClick(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  _getTabView() {
+//    return Center(
+//      child: Text(_tabs[_selectedIndex]),
+//    );
   }
 }

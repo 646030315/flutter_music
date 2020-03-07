@@ -10,15 +10,15 @@ class PressStateButton extends StatefulWidget {
   final String _imagePre;
   final String _imageNor;
 
-  double width;
-  double height;
+  final double width;
+  final double height;
 
-  var isSelectButtonMode;
+  final bool isSelectButtonMode;
 
-  OnTapCallback onTap;
-  OnTapCallback onTapCancel;
-  OnTapUpCallback onTapUp;
-  OnTapDownCallback onTapDown;
+  final OnTapCallback onTap;
+  final OnTapCallback onTapCancel;
+  final OnTapUpCallback onTapUp;
+  final OnTapDownCallback onTapDown;
 
   PressStateButton(this._imageNor, this._imagePre,
       {this.onTap,
