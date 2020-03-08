@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.red,
+        primarySwatch: themeColor,
       ),
       home: MyHomePage(title: 'n_music'),
     );
@@ -70,7 +70,6 @@ class _MyHomePageState extends State<MyHomePage>
         bottom: TabBar(
           controller: _controller,
           isScrollable: true,
-          onTap: _onTabClick,
           tabs: _tabs.map((String item) {
             return Tab(text: item);
           }).toList(),
@@ -86,19 +85,10 @@ class _MyHomePageState extends State<MyHomePage>
           return _getPageByItemName(item);
         }).toList(),
       ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.check),
-        backgroundColor: themeColor,
-        onPressed: _onFloatButtonClick,
-      ),
     );
   }
-
-  _onTabClick(int index) {}
 
   Widget _getPageByItemName(String itemName) {
     return pageMap[itemName] ?? PageCommon(pageName: itemName);
   }
-
-  _onFloatButtonClick() {}
 }

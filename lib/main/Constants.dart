@@ -5,9 +5,25 @@ import 'package:n_music/tabpages/PageEuropeAndAmerica.dart';
 const double AVATAR_SIZE = 60;
 const double BLUR_SIGMA_X = 10;
 const double BLUR_SIGMA_Y = 10;
-const themeColor = Color(0xFFE61A1A);
 const double TITLE_BAR_HEIGHT = 56;
 const double DIVIDER_HEIGHT = 1;
+
+const MaterialColor themeColor = MaterialColor(
+  _redPrimaryValue,
+  <int, Color>{
+    50: Color(0xFFFFEBEE),
+    100: Color(0xFFFFCDD2),
+    200: Color(0xFFEF9A9A),
+    300: Color(0xFFE57373),
+    400: Color(0xFFEF5350),
+    500: Color(_redPrimaryValue),
+    600: Color(0xFFE53935),
+    700: Color(0xFFD32F2F),
+    800: Color(0xFFC62828),
+    900: Color(0xFFB71C1C),
+  },
+);
+const int _redPrimaryValue = 0xFFE61A1A;
 
 const String AVATAR_URI = "assets/avatar.jpg";
 
