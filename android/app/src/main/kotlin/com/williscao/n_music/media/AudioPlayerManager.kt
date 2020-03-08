@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.Timeline
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.upstream.DataSource
@@ -24,7 +25,7 @@ import java.io.File
  *     time: 2020/3/8 19:26
  * <pre>
  */
-class AudioPlayerManager : Player.EventListener {
+class AudioPlayerManager : Player.EventListener{
 
     companion object {
         const val TAG = "AudioPlayerManager"
@@ -50,6 +51,7 @@ class AudioPlayerManager : Player.EventListener {
     private var mPlayingAudioPath = ""
 
     var songCompleteData = MutableLiveData<String>()
+    var progressData = MutableLiveData<Int>()
 
     fun play(context: Context, audioPath: String): Boolean {
         Log.d(TAG, "play audioPath : $audioPath")
@@ -74,7 +76,6 @@ class AudioPlayerManager : Player.EventListener {
             prepare(audioSource)
             playWhenReady = true
         }
-
         return true
     }
 
@@ -136,6 +137,11 @@ class AudioPlayerManager : Player.EventListener {
             }
             songCompleteData.postValue(mPlayingAudioPath)
         }
+    }
+
+    override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+        super.onTimelineChanged(timeline, reason)
+        Log.d(TAG, "onTimelineChanged timeline : $timeline")
     }
 
 }

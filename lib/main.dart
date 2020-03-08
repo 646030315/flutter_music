@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:flutter/services.dart';
+import 'package:n_music/BottomPlayBar.dart';
 import 'package:n_music/CustomAppBar.dart';
 import 'package:n_music/DrawerFrame.dart';
 import 'package:n_music/main/Constants.dart';
@@ -46,6 +47,12 @@ class _MyHomePageState extends State<MyHomePage>
   List<String> _tabs = pageMap.keys.toList();
   TabController _controller;
 
+  Map<String, dynamic> _playingSong = {
+    "songName": "Oxygen",
+    "singerName": "王嘉尔",
+    "album": "Oxygen"
+  };
+
   @override
   void initState() {
     super.initState();
@@ -79,16 +86,39 @@ class _MyHomePageState extends State<MyHomePage>
       drawer: Drawer(
         child: DrawerFrame(),
       ),
-      body: new TabBarView(
-        controller: _controller,
-        children: _tabs.map((String item) {
-          return _getPageByItemName(item);
-        }).toList(),
+      body: Stack(
+        alignment: AlignmentDirectional.bottomStart,
+        children: <Widget>[
+          Container(
+            padding: EdgeInsets.only(bottom: 72),
+            child: TabBarView(
+              controller: _controller,
+              children: _tabs.map((String item) {
+                return _getPageByItemName(item);
+              }).toList(),
+            ),
+          ),
+          BottomPlayBar(playingSong: _playingSong),
+        ],
       ),
     );
   }
 
   Widget _getPageByItemName(String itemName) {
-    return pageMap[itemName] ?? PageCommon(pageName: itemName);
+    if (itemName == "欧美") {
+      return PageEuropeAndAmerica(
+        musicPlayListener: _onMusicPlay,
+      );
+    } else {
+      return PageCommon(pageName: itemName);
+    }
+  }
+
+  _onMusicPlay(Map<String, dynamic> song) {
+    if(song != null){
+      setState(() {
+        _playingSong = song;
+      });
+    }
   }
 }

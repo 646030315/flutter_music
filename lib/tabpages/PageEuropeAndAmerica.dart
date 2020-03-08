@@ -6,7 +6,13 @@ import 'package:flutter/services.dart';
 import 'package:n_music/main/Constants.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+typedef OnMusicPlay = void Function(Map<String, dynamic> song);
+
 class PageEuropeAndAmerica extends StatefulWidget {
+  final OnMusicPlay musicPlayListener;
+
+  PageEuropeAndAmerica({this.musicPlayListener});
+
   @override
   State<StatefulWidget> createState() {
     return PageEuropeAndAmericaState();
@@ -104,6 +110,9 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
     print("_playSong result : ${result[0]}");
     bool bResult = result[0];
     if (bResult) {
+      if (widget.musicPlayListener != null) {
+        widget.musicPlayListener(_songs[index]);
+      }
       setState(() {
         _playingIndex = index;
       });
@@ -146,7 +155,6 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
       child: Container(
         color: Colors.white,
         height: 60,
-        alignment: Alignment.center,
         child: ListTile(
           selected: _playingIndex == index,
           title: Text(

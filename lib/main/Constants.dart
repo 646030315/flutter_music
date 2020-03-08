@@ -25,6 +25,8 @@ const MaterialColor themeColor = MaterialColor(
 );
 const int _redPrimaryValue = 0xFFE61A1A;
 
+const Color bottomBarColor = Color(0xeeF7F7F7);
+
 const String AVATAR_URI = "assets/avatar.jpg";
 
 // 读写权限检查相关常量
