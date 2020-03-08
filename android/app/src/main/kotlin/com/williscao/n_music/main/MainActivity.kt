@@ -4,9 +4,14 @@ import android.os.Bundle
 import androidx.lifecycle.ViewModelProvider
 import com.williscao.n_music.base.BaseActivity
 import io.flutter.plugin.common.MethodChannel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 const val MUSIC_CHANNEL = "com.williscao.n_music.main/music"
 const val CHANNEL_METHOD_GET_SONG_LIST = "com.williscao.n_music.main/getSongList"
+const val CHANNEL_METHOD_PLAY_SONG = "com.williscao.n_music.main/playSong"
+const val CHANNEL_METHOD_PAUSE_SONG = "com.williscao.n_music.main/pauseSong"
 
 class MainActivity : BaseActivity() {
 
@@ -25,10 +30,13 @@ class MainActivity : BaseActivity() {
     private fun initMethodChannel() {
         mMCMusic = MethodChannel(flutterEngine!!.dartExecutor.binaryMessenger, MUSIC_CHANNEL)
         mMCMusic.setMethodCallHandler { call, result ->
-            if (call.method == CHANNEL_METHOD_GET_SONG_LIST) {
-                mSvm.loadSongs(context, result)
-            } else {
-                result.notImplemented()
+            GlobalScope.launch(Dispatchers.Main) {
+                when (call.method) {
+                    CHANNEL_METHOD_GET_SONG_LIST -> mSvm.loadSongs(context, result)
+                    CHANNEL_METHOD_PLAY_SONG -> mSvm.playSong(context, call.arguments as String, result)
+                    CHANNEL_METHOD_PAUSE_SONG -> mSvm.playSong(context, call.arguments as String, result)
+                    else -> result.notImplemented()
+                }
             }
         }
     }

@@ -17,22 +17,9 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
   static const musicMethodChannel =
       const MethodChannel("com.williscao.n_music.main/music");
 
-  var _songs = <Map<String, dynamic>>[
-    {"songName": "爱的魔力转圈圈", "singerName": "williscao"},
-    {"songName": "爱的魔力转圈圈", "singerName": "williscao"},
-    {"songName": "爱的魔力转圈圈", "singerName": "williscao"},
-    {"songName": "爱的魔力转圈圈", "singerName": "williscao"},
-    {"songName": "爱的魔力转圈圈", "singerName": "williscao"},
-    {"songName": "爱的魔力转圈圈", "singerName": "williscao"},
-    {"songName": "爱的魔力转圈圈", "singerName": "williscao"},
-    {"songName": "爱的魔力转圈圈", "singerName": "williscao"},
-    {"songName": "爱的魔力转圈圈", "singerName": "williscao"},
-    {"songName": "爱的魔力转圈圈", "singerName": "williscao"},
-    {"songName": "爱的魔力转圈圈", "singerName": "williscao"},
-    {"songName": "爱的魔力转圈圈", "singerName": "williscao"},
-    {"songName": "爱的魔力转圈圈", "singerName": "williscao"},
-  ];
+  var _songs = <Map<String, dynamic>>[];
   int _permissionState = PERMISSION_NONE;
+  int _playingIndex = -1;
 
   @override
   void initState() {
@@ -93,6 +80,27 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
     });
   }
 
+  _playSong(int index) async {
+    final path = _songs[index]["path"];
+    final result = await musicMethodChannel.invokeListMethod(
+        "com.williscao.n_music.main/playSong", path);
+    print("_playSong result : ${result[0]}");
+    bool bResult = result[0];
+    if (bResult) {
+      setState(() {
+        _playingIndex = index;
+      });
+    }
+  }
+
+  _pauseSong(int index) async {
+    final path = _songs[index]["path"];
+    final result = await musicMethodChannel.invokeListMethod(
+        "com.williscao.n_music.main/pauseSong", path);
+
+    print("_playSong result : $result");
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -117,28 +125,46 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
 
   Widget _getItemView(BuildContext context, int index) {
     return GestureDetector(
-      onTap: _requestPermission,
+      onTap: () => _playSong(index),
       child: Container(
         color: Colors.white,
-        height: 80,
+        height: 60,
         alignment: Alignment.center,
         child: ListTile(
           title: Text(
             _songs[index]["songName"],
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: Colors.black, fontSize: 16),
+            style: TextStyle(
+                color: _playingIndex == index ? themeColor : Colors.black,
+                fontSize: 16),
           ),
           subtitle: Text(
             "${_songs[index]["singerName"]} - ${_songs[index]["album"]}",
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: Colors.grey, fontSize: 12),
+            style: TextStyle(
+                color: _playingIndex == index ? themeColor : Colors.grey,
+                fontSize: 12),
           ),
-          trailing: Icon(Icons.add),
-          leading: CircleAvatar(
-            radius: 24,
-            backgroundImage: AssetImage(AVATAR_URI),
+          trailing: Icon(
+            _playingIndex == index ? Icons.poll : Icons.pause,
+            color: _playingIndex == index ? themeColor : null,
+          ),
+          leading: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Container(
+                padding: EdgeInsets.only(left: 5),
+                child: Text(
+                  "${index + 1}",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 18,
+                      color: _playingIndex == index ? themeColor : Colors.grey),
+                ),
+              ),
+            ],
           ),
         ),
       ),

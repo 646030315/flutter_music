@@ -2,7 +2,10 @@ package com.williscao.n_music.main
 
 import android.content.Context
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.williscao.n_music.media.AudioPlayerManager
 import com.williscao.n_music.room.Song
 import com.williscao.n_music.room.SongRepository
 import io.flutter.plugin.common.MethodChannel
@@ -24,7 +27,6 @@ class SongViewModel : ViewModel() {
     fun loadSongs(context: Context, result: MethodChannel.Result) {
         GlobalScope.launch(Dispatchers.Main) {
             try {
-
                 var songs: List<String>? = null
                 withContext(Dispatchers.IO) {
                     songs = SongRepository.getInstance().getSongs(context).map {
@@ -41,6 +43,24 @@ class SongViewModel : ViewModel() {
             } catch (e: Throwable) {
                 e.printStackTrace()
             }
+        }
+    }
+
+    fun playSong(context: Context, path: String, result: MethodChannel.Result) {
+        GlobalScope.launch(Dispatchers.Main) {
+            if (AudioPlayerManager.getInstance().play(context, path)) {
+                result.success(arrayListOf(true))
+            } else {
+                result.error("1002", "播放失败", "播放地址无效")
+            }
+        }
+    }
+
+    fun pauseSong(context: Context, path: String, result: MethodChannel.Result) {
+        if (AudioPlayerManager.getInstance().play(context, path)) {
+            result.success(true)
+        } else {
+            result.error("1002", "播放失败", "播放地址无效")
         }
     }
 
