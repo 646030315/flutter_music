@@ -24,7 +24,24 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
   @override
   void initState() {
     super.initState();
+    musicMethodChannel.setMethodCallHandler(_onMethodCall);
     _checkPermissions();
+  }
+
+  Future<void> _onMethodCall(MethodCall call) {
+    switch (call.method) {
+      case 'com.williscao.n_music.main/completeSong':
+        final String audioPath = call.arguments;
+        print("complete song path : $audioPath");
+        if (_playingIndex > 0 && _songs[_playingIndex]["path"] == audioPath) {
+          _playSong(_playingIndex + 1 % _songs.length);
+        }
+        break;
+      default:
+        throw UnimplementedError(
+            "${call.method} was invoked but isn't implemented by PlatformViewsService");
+    }
+    return null;
   }
 
   /// 权限检测，查看是否需要弹框请求用户权限
@@ -131,6 +148,7 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
         height: 60,
         alignment: Alignment.center,
         child: ListTile(
+          selected: _playingIndex == index,
           title: Text(
             _songs[index]["songName"],
             maxLines: 1,
@@ -147,9 +165,17 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
                 color: _playingIndex == index ? themeColor : Colors.grey,
                 fontSize: 12),
           ),
-          trailing: Icon(
-            _playingIndex == index ? Icons.poll : Icons.pause,
-            color: _playingIndex == index ? themeColor : null,
+          trailing: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                _getDuration(index),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: 14,
+                    color: _playingIndex == index ? themeColor : Colors.grey),
+              ),
+            ],
           ),
           leading: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -169,5 +195,17 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
         ),
       ),
     );
+  }
+
+  _getDuration(int index) {
+    if (index >= 0 && index < _songs.length) {
+      final int duration = _songs[index]["duration"] ~/ 1000;
+
+      int minute = duration ~/ 60;
+      int second = duration % 60;
+
+      return "${minute <= 9 ? "0" : ""}$minute : ${second <= 9 ? "0" : ""}$second";
+    }
+    return "";
   }
 }

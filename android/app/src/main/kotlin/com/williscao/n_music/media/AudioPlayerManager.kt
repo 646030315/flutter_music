@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.text.TextUtils
 import android.util.Log
+import androidx.lifecycle.MutableLiveData
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
@@ -25,9 +26,8 @@ import java.io.File
  */
 class AudioPlayerManager : Player.EventListener {
 
-
     companion object {
-        const val TAG = "SimpleExoPlayer"
+        const val TAG = "AudioPlayerManager"
 
         var manager: AudioPlayerManager? = null
 
@@ -47,6 +47,10 @@ class AudioPlayerManager : Player.EventListener {
     private var mPlayer: SimpleExoPlayer? = null
     private var mDataSourceFactory: DataSource.Factory? = null
 
+    private var mPlayingAudioPath = ""
+
+    var songCompleteData = MutableLiveData<String>()
+
     fun play(context: Context, audioPath: String): Boolean {
         Log.d(TAG, "play audioPath : $audioPath")
 
@@ -59,6 +63,7 @@ class AudioPlayerManager : Player.EventListener {
             return false
         }
 
+        mPlayingAudioPath = audioPath
         initPlayer(context)
 
         mPlayer?.apply {
@@ -129,6 +134,7 @@ class AudioPlayerManager : Player.EventListener {
                 removeListener(this@AudioPlayerManager)
                 release()
             }
+            songCompleteData.postValue(mPlayingAudioPath)
         }
     }
 
