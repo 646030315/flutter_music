@@ -6,7 +6,7 @@ typedef OnTapDownCallback = void Function(TapDownDetails event);
 
 /// 具有点击态的按钮，根据点击状态展示不同图片
 // ignore: must_be_immutable
-class PressStateButton extends StatefulWidget {
+class StateButton extends StatefulWidget {
   final String _imagePre;
   final String _imageNor;
 
@@ -20,7 +20,7 @@ class PressStateButton extends StatefulWidget {
   final OnTapUpCallback onTapUp;
   final OnTapDownCallback onTapDown;
 
-  PressStateButton(this._imageNor, this._imagePre,
+  StateButton(this._imageNor, this._imagePre,
       {this.onTap,
       this.onTapCancel,
       this.onTapUp,
@@ -31,11 +31,11 @@ class PressStateButton extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return PressStateButtonState();
+    return StateButtonState();
   }
 }
 
-class PressStateButtonState extends State<PressStateButton> {
+class StateButtonState extends State<StateButton> {
   static const TAG = "PressStateButton";
 
   var isPress = false;

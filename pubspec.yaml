@@ -59,6 +59,11 @@ flutter:
     - actionbar_music_selected.png
     - icon_search.png
     - ic_menu.png
+    - playbar_btn_next.png
+    - playbar_btn_next_prs.png
+    - playbar_btn_pause.png
+    - playbar_btn_play.png
+    - playbar_btn_playlist.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

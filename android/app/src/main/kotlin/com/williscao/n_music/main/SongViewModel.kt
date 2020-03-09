@@ -48,7 +48,7 @@ class SongViewModel : ViewModel() {
 
     fun playSong(context: Context, path: String, result: MethodChannel.Result) {
         GlobalScope.launch(Dispatchers.Main) {
-            if (AudioPlayerManager.getInstance().play(context, path)) {
+            if (AudioPlayerManager.instance.play(context, path)) {
                 result.success(arrayListOf(true))
             } else {
                 result.error("1002", "播放失败", "播放地址无效")
@@ -56,12 +56,16 @@ class SongViewModel : ViewModel() {
         }
     }
 
-    fun pauseSong(context: Context, path: String, result: MethodChannel.Result) {
-        if (AudioPlayerManager.getInstance().play(context, path)) {
-            result.success(true)
-        } else {
-            result.error("1002", "播放失败", "播放地址无效")
-        }
+    fun pauseSong() {
+        AudioPlayerManager.instance.pause()
+    }
+
+    fun resumeSong() {
+        AudioPlayerManager.instance.resume()
+    }
+
+    fun resumeOrPause() {
+        AudioPlayerManager.instance.resumeOrPause()
     }
 
 }

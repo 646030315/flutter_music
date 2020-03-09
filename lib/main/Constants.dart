@@ -6,6 +6,7 @@ const double AVATAR_SIZE = 60;
 const double BLUR_SIGMA_X = 10;
 const double BLUR_SIGMA_Y = 10;
 const double TITLE_BAR_HEIGHT = 56;
+const double BOTTOM_BAR_HEIGHT = 50;
 const double DIVIDER_HEIGHT = 1;
 
 const MaterialColor themeColor = MaterialColor(

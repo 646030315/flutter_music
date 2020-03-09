@@ -2,6 +2,9 @@ package com.williscao.n_music.media
 
 import android.content.Context
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
+import android.os.Message
 import android.text.TextUtils
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
@@ -25,24 +28,16 @@ import java.io.File
  *     time: 2020/3/8 19:26
  * <pre>
  */
-class AudioPlayerManager : Player.EventListener{
+class AudioPlayerManager private constructor() : Player.EventListener {
 
     companion object {
         const val TAG = "AudioPlayerManager"
 
-        var manager: AudioPlayerManager? = null
+        val instance = AudioPlayerManagerHolder.instance
+    }
 
-        fun getInstance(): AudioPlayerManager {
-            if (manager == null) {
-                synchronized(this) {
-                    if (manager == null) {
-                        manager = AudioPlayerManager()
-                    }
-                }
-            }
-
-            return manager!!
-        }
+    private object AudioPlayerManagerHolder {
+        val instance = AudioPlayerManager()
     }
 
     private var mPlayer: SimpleExoPlayer? = null
@@ -52,6 +47,21 @@ class AudioPlayerManager : Player.EventListener{
 
     var songCompleteData = MutableLiveData<String>()
     var progressData = MutableLiveData<Int>()
+    var playingData = MutableLiveData<Boolean>()
+
+    private val progressHandler = Handler(Looper.getMainLooper())
+    private val progressRunnable: Runnable = object : Runnable {
+        override fun run() {
+            updateProgress()
+            progressHandler.postDelayed(this, 1000)
+        }
+    }
+
+    private fun updateProgress() {
+        mPlayer?.let {
+            progressData.postValue(mPlayer!!.currentPosition.toInt())
+        }
+    }
 
     fun play(context: Context, audioPath: String): Boolean {
         Log.d(TAG, "play audioPath : $audioPath")
@@ -79,6 +89,49 @@ class AudioPlayerManager : Player.EventListener{
         return true
     }
 
+    /**
+     * 根据当前的状态来决定暂停还是播放
+     */
+    fun resumeOrPause() {
+        mPlayer?.apply {
+            if (playbackState == Player.STATE_READY) {
+                if (isPlaying) {
+                    playWhenReady = false
+                    updateProgress()
+                } else {
+                    playWhenReady = true
+                }
+
+            }
+        }
+    }
+
+    /**
+     * 播放音乐
+     */
+    fun resume() {
+        mPlayer?.apply {
+            if (playbackState == Player.STATE_READY) {
+                if (!isPlaying) {
+                    playWhenReady = true
+                }
+            }
+        }
+    }
+
+    /**
+     * 暂停音乐
+     */
+    fun pause() {
+        mPlayer?.apply {
+            if (playbackState == Player.STATE_READY) {
+                if (isPlaying) {
+                    playWhenReady = false
+                }
+            }
+        }
+    }
+
     private fun initPlayer(context: Context) {
         mPlayer?.apply {
             removeListener(this@AudioPlayerManager)
@@ -96,10 +149,10 @@ class AudioPlayerManager : Player.EventListener{
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         Log.d(TAG, "onIsPlayingChanged isPlaying : $isPlaying")
+        playingData.postValue(isPlaying)
+        progressHandler.removeCallbacks(progressRunnable)
         if (isPlaying) {
-
-        } else {
-
+            progressHandler.post(progressRunnable)
         }
     }
 
@@ -128,20 +181,18 @@ class AudioPlayerManager : Player.EventListener{
     }
 
     override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
-        Log.d(TAG, "onPlayerStateChanged curState : $playbackState")
+        Log.d(TAG, "onPlayerStateChanged curState : $playbackState, playWhenReady : $playWhenReady")
 
-        if (playbackState == Player.STATE_ENDED) {
-            mPlayer?.apply {
-                removeListener(this@AudioPlayerManager)
-                release()
+        when (playbackState) {
+            Player.STATE_ENDED -> {
+                progressHandler.removeCallbacks(progressRunnable)
+                mPlayer?.apply {
+                    removeListener(this@AudioPlayerManager)
+                    release()
+                }
+                songCompleteData.postValue(mPlayingAudioPath)
             }
-            songCompleteData.postValue(mPlayingAudioPath)
         }
-    }
-
-    override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-        super.onTimelineChanged(timeline, reason)
-        Log.d(TAG, "onTimelineChanged timeline : $timeline")
     }
 
 }

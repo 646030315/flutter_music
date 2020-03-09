@@ -1,16 +1,17 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:n_music/main/Constants.dart';
+import 'package:n_music/main/MusicPlayerController.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 typedef OnMusicPlay = void Function(Map<String, dynamic> song);
 
 class PageEuropeAndAmerica extends StatefulWidget {
   final OnMusicPlay musicPlayListener;
+  final MusicPlayerController musicPlayerController;
 
-  PageEuropeAndAmerica({this.musicPlayListener});
+  PageEuropeAndAmerica({this.musicPlayListener, this.musicPlayerController});
 
   @override
   State<StatefulWidget> createState() {
@@ -19,34 +20,41 @@ class PageEuropeAndAmerica extends StatefulWidget {
 }
 
 class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
-  static const musicMethodChannel =
-      const MethodChannel("com.williscao.n_music.main/music");
-
   var _songs = <Map<String, dynamic>>[];
   int _permissionState = PERMISSION_NONE;
   int _playingIndex = -1;
+  bool isPlaying = false;
 
   @override
   void initState() {
     super.initState();
-    musicMethodChannel.setMethodCallHandler(_onMethodCall);
     _checkPermissions();
+
+    print("PageEuropeAndAmericaState initState");
+    widget.musicPlayerController
+        ?.addOnMusicLoadCompleteListener(_onMusicLoadComplete);
+    widget.musicPlayerController
+        ?.addOnMusicPlayingChangeListener(_onMusicPlayingStateChange);
   }
 
-  Future<void> _onMethodCall(MethodCall call) {
-    switch (call.method) {
-      case 'com.williscao.n_music.main/completeSong':
-        final String audioPath = call.arguments;
-        print("complete song path : $audioPath");
-        if (_playingIndex > 0 && _songs[_playingIndex]["path"] == audioPath) {
-          _playSong(_playingIndex + 1 % _songs.length);
-        }
-        break;
-      default:
-        throw UnimplementedError(
-            "${call.method} was invoked but isn't implemented by PlatformViewsService");
-    }
-    return null;
+  @override
+  void dispose() {
+    super.dispose();
+
+    widget.musicPlayerController
+        ?.removeOnMusicLoadCompleteListener(_onMusicLoadComplete);
+    widget.musicPlayerController
+        ?.removeOnMusicPlayingChangeListener(_onMusicPlayingStateChange);
+  }
+
+  void _onMusicLoadComplete(List<Map<String, dynamic>> songList) {
+    setState(() {
+      _songs = songList;
+    });
+  }
+
+  void _onMusicPlayingStateChange(bool isPlaying, Map<String, dynamic> song) {
+
   }
 
   /// 权限检测，查看是否需要弹框请求用户权限
@@ -63,10 +71,10 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
           _requestPermission();
         }
       } else {
-        _getSongList();
+        widget.musicPlayerController?.getSongList();
       }
     } else {
-      _getSongList();
+      widget.musicPlayerController?.getSongList();
     }
   }
 
@@ -84,45 +92,8 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
     _permissionState = granted ? PERMISSION_GRANT : PERMISSION_DENY;
 
     if (_permissionState == PERMISSION_GRANT) {
-      _getSongList();
+      widget.musicPlayerController?.getSongList();
     }
-  }
-
-  _getSongList() async {
-    final songs = await musicMethodChannel
-        .invokeListMethod("com.williscao.n_music.main/getSongList");
-
-    print(songs);
-    setState(() {
-      _songs = songs.map((element) {
-        Map<String, dynamic> map = jsonDecode(element);
-        return map;
-      }).toList();
-    });
-  }
-
-  _playSong(int index) async {
-    final path = _songs[index]["path"];
-    final result = await musicMethodChannel.invokeListMethod(
-        "com.williscao.n_music.main/playSong", path);
-    print("_playSong result : ${result[0]}");
-    bool bResult = result[0];
-    if (bResult) {
-      if (widget.musicPlayListener != null) {
-        widget.musicPlayListener(_songs[index]);
-      }
-      setState(() {
-        _playingIndex = index;
-      });
-    }
-  }
-
-  _pauseSong(int index) async {
-    final path = _songs[index]["path"];
-    final result = await musicMethodChannel.invokeListMethod(
-        "com.williscao.n_music.main/pauseSong", path);
-
-    print("_playSong result : $result");
   }
 
   @override
@@ -149,7 +120,7 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
 
   Widget _getItemView(BuildContext context, int index) {
     return GestureDetector(
-      onTap: () => _playSong(index),
+      onTap: () => widget.musicPlayerController?.playSong(index),
       child: Container(
         color: Colors.white,
         height: 60,

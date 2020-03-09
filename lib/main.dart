@@ -5,6 +5,7 @@ import 'package:n_music/BottomPlayBar.dart';
 import 'package:n_music/CustomAppBar.dart';
 import 'package:n_music/DrawerFrame.dart';
 import 'package:n_music/main/Constants.dart';
+import 'package:n_music/main/MusicPlayerController.dart';
 import 'package:n_music/tabpages/PageCommon.dart';
 import 'package:n_music/tabpages/PageEuropeAndAmerica.dart';
 
@@ -43,17 +44,39 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
   List<String> _tabs = pageMap.keys.toList();
-  TabController _controller;
+  TabController _tabController;
+  MusicPlayerController _musicPlayController;
 
   Map<String, dynamic> _playingSong;
 
   @override
   void initState() {
     super.initState();
-    _controller = TabController(
+    _musicPlayController = MusicPlayerController();
+    _tabController = TabController(
       length: _tabs.length,
       vsync: this,
     );
+
+    print("_MyHomePageState initState");
+    _musicPlayController
+        ?.addOnMusicPlayingChangeListener(_onMusicPlayingStateChange);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    print("_MyHomePageState dispose");
+    _musicPlayController
+        ?.removeOnMusicPlayingChangeListener(_onMusicPlayingStateChange);
+  }
+
+  void _onMusicPlayingStateChange(bool isPlaying, Map<String, dynamic> song) {
+    print(
+        "main _onMusicPlayingStateChange isPlaying : $isPlaying, song : $song");
+    setState(() {
+      _playingSong = song;
+    });
   }
 
   @override
@@ -69,7 +92,7 @@ class _MyHomePageState extends State<MyHomePage>
       appBar: CustomAppBar(
         statusBarHeight: statusBarHeight,
         bottom: TabBar(
-          controller: _controller,
+          controller: _tabController,
           isScrollable: true,
           tabs: _tabs.map((String item) {
             return Tab(text: item);
@@ -84,9 +107,10 @@ class _MyHomePageState extends State<MyHomePage>
         alignment: AlignmentDirectional.bottomStart,
         children: <Widget>[
           Container(
-            padding: EdgeInsets.only(bottom: _playingSong == null ? 0 : 72),
+            padding: EdgeInsets.only(
+                bottom: _playingSong == null ? 0 : BOTTOM_BAR_HEIGHT),
             child: TabBarView(
-              controller: _controller,
+              controller: _tabController,
               children: _tabs.map((String item) {
                 return _getPageByItemName(item);
               }).toList(),
@@ -109,6 +133,7 @@ class _MyHomePageState extends State<MyHomePage>
     if (itemName == "欧美") {
       return PageEuropeAndAmerica(
         musicPlayListener: _onMusicPlay,
+        musicPlayerController: _musicPlayController,
       );
     } else {
       return PageCommon(pageName: itemName);
