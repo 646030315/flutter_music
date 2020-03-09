@@ -46,7 +46,7 @@ class AudioPlayerManager private constructor() : Player.EventListener {
     private var mPlayingAudioPath = ""
 
     var songCompleteData = MutableLiveData<String>()
-    var progressData = MutableLiveData<Int>()
+    var progressData = MutableLiveData<ProgressData>()
     var playingData = MutableLiveData<Boolean>()
 
     private val progressHandler = Handler(Looper.getMainLooper())
@@ -59,7 +59,7 @@ class AudioPlayerManager private constructor() : Player.EventListener {
 
     private fun updateProgress() {
         mPlayer?.let {
-            progressData.postValue(mPlayer!!.currentPosition.toInt())
+            progressData.postValue(ProgressData(mPlayer!!.currentPosition.toInt(), mPlayer!!.duration.toInt()))
         }
     }
 

@@ -8,7 +8,7 @@ typedef OnMusicLoadCompleteListener = void Function(
 typedef OnMusicProgressListener = void Function(int progress);
 
 typedef OnMusicPlayingChangeListener = void Function(
-    bool isPlaying, Map<String, dynamic>);
+    bool isPlaying, int index, Map<String, dynamic>);
 
 /// method channel 相关变量的前缀
 const METHOD_CHANNEL_PREFIX = "com.williscao.n_music.main";
@@ -43,7 +43,7 @@ const CALLBACK_PLAYING_STATE = "$METHOD_CHANNEL_PREFIX/playingState";
 class MusicPlayerController {
   var _musicMethodChannel;
   int _playingIndex = -1;
-  var _songs = <Map<String, dynamic>>[];
+  var _songs = List<Map<String, dynamic>>();
 
   List<OnMusicLoadCompleteListener> _onMusicLoadCompleteListeners = [];
   List<OnMusicProgressListener> _onMusicProgressListeners = [];
@@ -62,37 +62,51 @@ class MusicPlayerController {
     switch (call.method) {
       case CALLBACK_COMPLETE_SONG:
         final String audioPath = call.arguments;
-        print("complete song path : $audioPath");
-        if (_playingIndex > 0 && _songs[_playingIndex]["path"] == audioPath) {
-          playSong(_playingIndex + 1 % _songs.length);
-        }
+        _onComplete(audioPath);
         break;
       case CALLBACK_PROGRESS:
-        final int progress = call.arguments;
-        print("current progress : $progress");
-
-        _onMusicProgressListeners.forEach((OnMusicProgressListener listener) {
-          listener(progress);
-        });
-
+        final Map<String, dynamic> progressData = jsonDecode(call.arguments);
+        _onProgressUpdate(progressData);
         break;
       case CALLBACK_PLAYING_STATE:
         final bool isPlaying = call.arguments;
-        print("current playing status : $isPlaying");
-
-        print("CALLBACK_PLAYING_STATE _onMusicPlayingChangeListeners: $_onMusicPlayingChangeListeners");
-        
-        for(OnMusicPlayingChangeListener listener in _onMusicPlayingChangeListeners){
-          print("CALLBACK_PLAYING_STATE listtener : $listener");
-          listener.call(isPlaying, _songs[_playingIndex]);
-        }
-
+        _onPlayingStateChange(isPlaying);
         break;
       default:
         throw UnimplementedError(
             "${call.method} was invoked but isn't implemented by PlatformViewsService");
     }
     return null;
+  }
+
+  _onComplete(String audioPath) {
+    print("_onComplete path : $audioPath");
+    if (_playingIndex >= 0 &&
+        _playingIndex < _songs.length &&
+        _songs[_playingIndex]["path"] == audioPath) {
+      playSong(_playingIndex + 1 % _songs.length);
+    }
+  }
+
+  _onProgressUpdate(Map<String, dynamic> progressData) {
+    final int progress = progressData["progress"];
+    final int duration = progressData["duration"];
+    final int percent = progress * 100 ~/ duration;
+    print(
+        "_onProgressUpdate progress : $progress, duration : $duration, percent : $percent");
+
+    _onMusicProgressListeners.forEach((OnMusicProgressListener listener) {
+      listener(percent);
+    });
+  }
+
+  _onPlayingStateChange(bool isPlaying) {
+    print("_onPlayingStateChange isPlaying : $isPlaying");
+    if (_playingIndex >= 0 && _playingIndex < _songs.length) {
+      _onMusicPlayingChangeListeners.forEach((element) {
+        element.call(isPlaying, _playingIndex, _songs[_playingIndex]);
+      });
+    }
   }
 
   /// 获取歌曲列表
@@ -115,6 +129,7 @@ class MusicPlayerController {
   /// @param index 将要播放的歌曲的index
   playSong(int index) async {
     if (index >= 0 && index < _songs.length) {
+      _playingIndex = index;
       final path = _songs[index]["path"];
       await _musicMethodChannel.invokeListMethod(METHOD_PLAY_SONG, path);
     }
@@ -122,8 +137,10 @@ class MusicPlayerController {
 
   /// 播放下一首歌
   nextSong() async {
-    final nextSongIndex = _playingIndex + 1 % _songs.length;
-    playSong(nextSongIndex);
+    if (_playingIndex >= 0 && _playingIndex < _songs.length) {
+      final nextSongIndex = _playingIndex + 1 % _songs.length;
+      playSong(nextSongIndex);
+    }
   }
 
   /// 暂停播放
@@ -145,9 +162,7 @@ class MusicPlayerController {
   }
 
   void addOnMusicPlayingChangeListener(OnMusicPlayingChangeListener listener) {
-    print("addOnMusicPlayingChangeListener listener : $listener");
     _onMusicPlayingChangeListeners.add(listener);
-    print("addOnMusicPlayingChangeListener _onMusicPlayingChangeListeners : $_onMusicPlayingChangeListeners");
   }
 
   void removeOnMusicLoadCompleteListener(OnMusicLoadCompleteListener listener) {
@@ -160,8 +175,6 @@ class MusicPlayerController {
 
   void removeOnMusicPlayingChangeListener(
       OnMusicPlayingChangeListener listener) {
-    print("removeOnMusicPlayingChangeListener listener : $listener");
     _onMusicPlayingChangeListeners.remove(listener);
-    print("removeOnMusicPlayingChangeListener _onMusicPlayingChangeListeners : $_onMusicPlayingChangeListeners");
   }
 }

@@ -71,7 +71,7 @@ class _MyHomePageState extends State<MyHomePage>
         ?.removeOnMusicPlayingChangeListener(_onMusicPlayingStateChange);
   }
 
-  void _onMusicPlayingStateChange(bool isPlaying, Map<String, dynamic> song) {
+  void _onMusicPlayingStateChange(bool isPlaying, int index, Map<String, dynamic> song) {
     print(
         "main _onMusicPlayingStateChange isPlaying : $isPlaying, song : $song");
     setState(() {
@@ -126,7 +126,9 @@ class _MyHomePageState extends State<MyHomePage>
     print("_getBottomBar $_playingSong");
     return _playingSong == null
         ? Container()
-        : BottomPlayBar(playingSong: _playingSong);
+        : BottomPlayBar(
+            musicPlayerController: _musicPlayController,
+            playingSong: _playingSong);
   }
 
   Widget _getPageByItemName(String itemName) {

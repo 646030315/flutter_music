@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:n_music/main/Constants.dart';
 import 'package:n_music/main/MusicPlayerController.dart';
@@ -23,7 +21,6 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
   var _songs = <Map<String, dynamic>>[];
   int _permissionState = PERMISSION_NONE;
   int _playingIndex = -1;
-  bool isPlaying = false;
 
   @override
   void initState() {
@@ -53,8 +50,13 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
     });
   }
 
-  void _onMusicPlayingStateChange(bool isPlaying, Map<String, dynamic> song) {
+  void _onMusicPlayingStateChange(
+      bool isPlaying, int index, Map<String, dynamic> song) {
+    print("_onMusicPlayingStateChange isPlaying : $isPlaying , song : $song");
 
+    setState(() {
+      _playingIndex = index;
+    });
   }
 
   /// 权限检测，查看是否需要弹框请求用户权限
@@ -120,7 +122,7 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
 
   Widget _getItemView(BuildContext context, int index) {
     return GestureDetector(
-      onTap: () => widget.musicPlayerController?.playSong(index),
+      onTap: () => _onItemClick(index),
       child: Container(
         color: Colors.white,
         height: 60,
@@ -172,6 +174,11 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
         ),
       ),
     );
+  }
+
+  _onItemClick(int position) {
+    _playingIndex = position;
+    widget.musicPlayerController?.playSong(position);
   }
 
   _getDuration(int index) {

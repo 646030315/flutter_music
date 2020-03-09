@@ -57,7 +57,7 @@ class MainActivity : BaseActivity() {
         }
 
         AudioPlayerManager.instance.progressData.observeForever {
-            mMCMusic.invokeMethod(CHANNEL_METHOD_PROGRESS, it)
+            mMCMusic.invokeMethod(CHANNEL_METHOD_PROGRESS, it.toJson())
         }
     }
 }
