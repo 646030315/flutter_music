@@ -37,7 +37,7 @@ class SongRepository {
             val dao = SongDatabase.INSTANCE.songDao()
             var songs = dao.selectAll()
             val hasSongs = songs.isNotEmpty()
-            if (hasSongs) {
+            if (!hasSongs) {
                 // 我们的本地数据库有没有保存扫描到的歌曲，我们进行本地磁盘扫描
                 // 获取媒体库音乐，is_ringtone == 0过滤手机铃声，title COLLATE LOCALIZED ASC 搜索的排序是 先显示中文，然后显示英文，分别按照字母的升序显示，按照产品需求，先显示英文
                 val sortOrder = MediaStore.Audio.Media.TITLE + " COLLATE LOCALIZED ASC"

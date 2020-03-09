@@ -8,8 +8,6 @@ import 'package:n_music/main/Constants.dart';
 import 'package:n_music/tabpages/PageCommon.dart';
 import 'package:n_music/tabpages/PageEuropeAndAmerica.dart';
 
-import 'PageMain.dart';
-
 void main() {
   runApp(MyApp());
   if (Platform.isAndroid) {
@@ -47,11 +45,7 @@ class _MyHomePageState extends State<MyHomePage>
   List<String> _tabs = pageMap.keys.toList();
   TabController _controller;
 
-  Map<String, dynamic> _playingSong = {
-    "songName": "Oxygen",
-    "singerName": "王嘉尔",
-    "album": "Oxygen"
-  };
+  Map<String, dynamic> _playingSong;
 
   @override
   void initState() {
@@ -90,7 +84,7 @@ class _MyHomePageState extends State<MyHomePage>
         alignment: AlignmentDirectional.bottomStart,
         children: <Widget>[
           Container(
-            padding: EdgeInsets.only(bottom: 72),
+            padding: EdgeInsets.only(bottom: _playingSong == null ? 0 : 72),
             child: TabBarView(
               controller: _controller,
               children: _tabs.map((String item) {
@@ -98,10 +92,17 @@ class _MyHomePageState extends State<MyHomePage>
               }).toList(),
             ),
           ),
-          BottomPlayBar(playingSong: _playingSong),
+          _getBottomBar(),
         ],
       ),
     );
+  }
+
+  _getBottomBar() {
+    print("_getBottomBar $_playingSong");
+    return _playingSong == null
+        ? Container()
+        : BottomPlayBar(playingSong: _playingSong);
   }
 
   Widget _getPageByItemName(String itemName) {
@@ -115,7 +116,7 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   _onMusicPlay(Map<String, dynamic> song) {
-    if(song != null){
+    if (song != null) {
       setState(() {
         _playingSong = song;
       });

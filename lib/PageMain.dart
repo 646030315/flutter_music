@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:n_music/main/Constants.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -60,8 +59,7 @@ class PageMainState extends State<PageMain>
         .checkPermissionStatus(PermissionGroup.storage);
 
     if (status != PermissionStatus.granted) {
-      if (status == PermissionStatus.disabled ||
-          status == PermissionStatus.neverAskAgain) {
+      if (status == PermissionStatus.neverAskAgain) {
         // 如果功能无法使用或者用户设置不在弹窗，这里不做任何事情，不弹框，不请求
         setState(() {
           _permissionState = PERMISSION_DENY;

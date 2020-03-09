@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 typedef OnTapCallback = void Function();
 typedef OnTapUpCallback = void Function(TapUpDetails event);
