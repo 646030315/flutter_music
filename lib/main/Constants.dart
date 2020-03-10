@@ -48,3 +48,4 @@ final pageMap = <String, Widget>{
   "销量": PageCommon(pageName: "销量"),
   "热歌": PageCommon(pageName: "热歌"),
 };
+

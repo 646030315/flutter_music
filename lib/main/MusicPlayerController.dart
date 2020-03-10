@@ -1,14 +1,19 @@
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
+import 'package:n_music/loop/LoopMode.dart';
+import 'package:n_music/main/NLog.dart';
 
 typedef OnMusicLoadCompleteListener = void Function(
     List<Map<String, dynamic>> songList);
 
-typedef OnMusicProgressListener = void Function(int progress);
+typedef OnMusicProgressListener = void Function(int progress, int buffered);
 
 typedef OnMusicPlayingChangeListener = void Function(
     bool isPlaying, int index, Map<String, dynamic>);
+
+typedef OnMusicPlayingErrorListener = void Function(
+    int index, Map<String, dynamic>);
 
 /// method channel 相关变量的前缀
 const METHOD_CHANNEL_PREFIX = "com.williscao.n_music.main";
@@ -40,14 +45,20 @@ const CALLBACK_PROGRESS = "$METHOD_CHANNEL_PREFIX/progress";
 /// method channel 播放状态
 const CALLBACK_PLAYING_STATE = "$METHOD_CHANNEL_PREFIX/playingState";
 
+/// method channel 音频播放失败
+const CALLBACK_PLAYING_ERROR = "$METHOD_CHANNEL_PREFIX/playingError";
+
 class MusicPlayerController {
   var _musicMethodChannel;
-  int _playingIndex = -1;
-  var _songs = List<Map<String, dynamic>>();
+  int playingIndex = -1;
+  var songs = List<Map<String, dynamic>>();
+
+  var loopMode = SequencePlayModeFactory().createLoopMode();
 
   List<OnMusicLoadCompleteListener> _onMusicLoadCompleteListeners = [];
   List<OnMusicProgressListener> _onMusicProgressListeners = [];
   List<OnMusicPlayingChangeListener> _onMusicPlayingChangeListeners = [];
+  List<OnMusicPlayingErrorListener> _onMusicPlayingErrorListeners = [];
 
   MusicPlayerController() {
     init();
@@ -72,6 +83,10 @@ class MusicPlayerController {
         final bool isPlaying = call.arguments;
         _onPlayingStateChange(isPlaying);
         break;
+      case CALLBACK_PLAYING_ERROR:
+        final String audioPath = call.arguments;
+        _onPlayingError(audioPath);
+        break;
       default:
         throw UnimplementedError(
             "${call.method} was invoked but isn't implemented by PlatformViewsService");
@@ -80,67 +95,85 @@ class MusicPlayerController {
   }
 
   _onComplete(String audioPath) {
-    print("_onComplete path : $audioPath");
-    if (_playingIndex >= 0 &&
-        _playingIndex < _songs.length &&
-        _songs[_playingIndex]["path"] == audioPath) {
-      playSong(_playingIndex + 1 % _songs.length);
-    }
+    nLog("_onComplete path : $audioPath");
+    nextSong();
   }
 
   _onProgressUpdate(Map<String, dynamic> progressData) {
     final int progress = progressData["progress"];
     final int duration = progressData["duration"];
-    final int percent = progress * 100 ~/ duration;
-    print(
-        "_onProgressUpdate progress : $progress, duration : $duration, percent : $percent");
+    final int buffed = progressData["buffed"];
+    final int progressPercent = progress * 100 ~/ duration;
+    final int bufferedPercent = buffed * 100 ~/ duration;
+    nLog(
+        "_onProgressUpdate progress : $progress, duration : $duration, progressPercent : $progressPercent, buffedPercent : $bufferedPercent");
 
-    _onMusicProgressListeners.forEach((OnMusicProgressListener listener) {
-      listener(percent);
+    _onMusicProgressListeners?.forEach((OnMusicProgressListener listener) {
+      listener?.call(progressPercent, bufferedPercent);
     });
   }
 
   _onPlayingStateChange(bool isPlaying) {
-    print("_onPlayingStateChange isPlaying : $isPlaying");
-    if (_playingIndex >= 0 && _playingIndex < _songs.length) {
-      _onMusicPlayingChangeListeners.forEach((element) {
-        element.call(isPlaying, _playingIndex, _songs[_playingIndex]);
+    nLog("_onPlayingStateChange isPlaying : $isPlaying");
+    if (playingIndex >= 0 && playingIndex < songs.length) {
+      _onMusicPlayingChangeListeners?.forEach((element) {
+        element?.call(isPlaying, playingIndex, songs[playingIndex]);
+      });
+    }
+  }
+
+  _onPlayingError(String audioPath) {
+    nLog("_onPlayingError audioPath : $audioPath");
+    if (playingIndex >= 0 &&
+        playingIndex < songs.length &&
+        songs[playingIndex]["path"] == audioPath) {
+      _onMusicPlayingErrorListeners?.forEach((element) {
+        element?.call(playingIndex, songs[playingIndex]);
       });
     }
   }
 
   /// 获取歌曲列表
   getSongList() async {
-    final songs =
+    final originListSongs =
         await _musicMethodChannel.invokeListMethod(METHOD_GET_SONG_LIST);
 
-    _songs = List<Map<String, dynamic>>.from(
-        songs.map((element) => jsonDecode(element)));
+    songs = List<Map<String, dynamic>>.from(
+        originListSongs.map((element) => jsonDecode(element)));
 
-    print("getSongList : $_songs");
+    nLog("getSongList : $songs");
 
     _onMusicLoadCompleteListeners
-        .forEach((OnMusicLoadCompleteListener listener) {
-      listener(_songs);
+        ?.forEach((OnMusicLoadCompleteListener listener) {
+      listener?.call(songs);
     });
   }
 
   /// 播放歌曲
   /// @param index 将要播放的歌曲的index
   playSong(int index) async {
-    if (index >= 0 && index < _songs.length) {
-      _playingIndex = index;
-      final path = _songs[index]["path"];
+    if (index >= 0 && index < songs.length) {
+      playingIndex = index;
+      final path = songs[index]["path"];
       await _musicMethodChannel.invokeListMethod(METHOD_PLAY_SONG, path);
     }
   }
 
   /// 播放下一首歌
   nextSong() async {
-    if (_playingIndex >= 0 && _playingIndex < _songs.length) {
-      final nextSongIndex = _playingIndex + 1 % _songs.length;
-      playSong(nextSongIndex);
-    }
+    playSong(loopMode.getNextSong(this));
+  }
+
+  /// 切换循环模式
+  switchLoopMode() {
+    loopMode = loopMode.getNextMode();
+    nLog("current loop mode after switch : ${loopMode.getModeName()}");
+    return loopMode.getModeName();
+  }
+
+  /// 获取循环模式名字
+  getLoopModeName() {
+    return loopMode.getModeName();
   }
 
   /// 暂停播放
@@ -165,6 +198,10 @@ class MusicPlayerController {
     _onMusicPlayingChangeListeners.add(listener);
   }
 
+  void addOnMusicPlayingErrorListener(OnMusicPlayingErrorListener listener) {
+    _onMusicPlayingErrorListeners.add(listener);
+  }
+
   void removeOnMusicLoadCompleteListener(OnMusicLoadCompleteListener listener) {
     _onMusicLoadCompleteListeners.remove(listener);
   }
@@ -176,5 +213,9 @@ class MusicPlayerController {
   void removeOnMusicPlayingChangeListener(
       OnMusicPlayingChangeListener listener) {
     _onMusicPlayingChangeListeners.remove(listener);
+  }
+
+  void removeOnMusicPlayingErrorListener(OnMusicPlayingErrorListener listener) {
+    _onMusicPlayingErrorListeners.remove(listener);
   }
 }

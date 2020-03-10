@@ -2,7 +2,9 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:n_music/Toast.dart';
 import 'package:n_music/main/Constants.dart';
+import 'package:n_music/main/NLog.dart';
 
 import 'main/MusicPlayerController.dart';
 
@@ -21,12 +23,13 @@ class BottomPlayBar extends StatefulWidget {
 class BottomPlayBarState extends State<BottomPlayBar> {
   bool _isPlaying = false;
   double _progressWidth = 0;
+  double _bufferedWidth = 0;
 
   @override
   void initState() {
     super.initState();
 
-    print("BottomPlayBarState initState");
+    nLog("BottomPlayBarState initState");
 
     widget.musicPlayerController
         ?.addOnMusicPlayingChangeListener(_onMusicPlayingStateChange);
@@ -39,26 +42,30 @@ class BottomPlayBarState extends State<BottomPlayBar> {
   void dispose() {
     super.dispose();
 
-    print("BottomPlayBarState dispose");
+    nLog("BottomPlayBarState dispose");
     widget.musicPlayerController
         ?.removeOnMusicPlayingChangeListener(_onMusicPlayingStateChange);
     widget.musicPlayerController
         ?.removeOnMusicProgressListener(_onMusicProgressUpdate);
   }
 
-  void _onMusicPlayingStateChange(bool isPlaying, int index, Map<String, dynamic> song) {
+  void _onMusicPlayingStateChange(
+      bool isPlaying, int index, Map<String, dynamic> song) {
     setState(() {
       _isPlaying = isPlaying;
     });
   }
 
-  void _onMusicProgressUpdate(int progress) {
+  void _onMusicProgressUpdate(int progressPercent, int bufferedPercent) {
     setState(() {
-      _progressWidth = (window.physicalSize.width * progress) /
+      _progressWidth = (window.physicalSize.width * progressPercent) /
           (100 * window.devicePixelRatio);
 
-      print(
-          "_onMusicProgressUpdate windowWidth : ${window.physicalSize.width} , progress : $progress, progressWidth: $_progressWidth, devicePixelRatio : ${window.devicePixelRatio}");
+      _bufferedWidth = (window.physicalSize.width * bufferedPercent) /
+          (100 * window.devicePixelRatio);
+
+      nLog(
+          "_onMusicProgressUpdate windowWidth : ${window.physicalSize.width} , progress : $progressPercent, progressWidth: $_progressWidth, _bufferedWidth: $_bufferedWidth, devicePixelRatio : ${window.devicePixelRatio}");
     });
   }
 
@@ -108,14 +115,14 @@ class BottomPlayBarState extends State<BottomPlayBar> {
                     GestureDetector(
                       onTap: _onSongListClick,
                       child: Container(
-                        width: 30,
+                        width: 40,
                         child: Image.asset("playbar_btn_playlist.png"),
                       ),
                     ),
                     GestureDetector(
                       onTap: _onPauseResumeClick,
                       child: Container(
-                        width: 30,
+                        width: 40,
                         child: Image.asset(!_isPlaying
                             ? "playbar_btn_play.png"
                             : "playbar_btn_pause.png"),
@@ -124,12 +131,17 @@ class BottomPlayBarState extends State<BottomPlayBar> {
                     GestureDetector(
                       onTap: _onNextClick,
                       child: Container(
-                        width: 30,
+                        width: 40,
                         child: Image.asset("playbar_btn_next.png"),
                       ),
                     ),
                   ],
                 ),
+              ),
+              Container(
+                height: 2,
+                width: _bufferedWidth,
+                color: Colors.grey,
               ),
               Container(
                 height: 2,
@@ -143,13 +155,15 @@ class BottomPlayBarState extends State<BottomPlayBar> {
 
   /// 展示当前的播放列表
   _onSongListClick() {
-
+    Toast.show(context, widget.musicPlayerController?.switchLoopMode());
   }
 
+  /// 暂停或者恢复播放，根据当前状态
   _onPauseResumeClick() {
     widget.musicPlayerController?.pauseOrResume();
   }
 
+  /// 下一首
   _onNextClick() {
     widget.musicPlayerController?.nextSong();
   }

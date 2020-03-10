@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'NLog.dart';
+
 typedef OnTapCallback = void Function();
 typedef OnTapUpCallback = void Function(TapUpDetails event);
 typedef OnTapDownCallback = void Function(TapDownDetails event);
@@ -72,7 +74,7 @@ class StateButtonState extends State<StateButton> {
   }
 
   _onTap() {
-    print("$TAG _onTap");
+    nLog("$TAG _onTap");
 
     if (widget.isSelectButtonMode) {
       select();
@@ -84,7 +86,7 @@ class StateButtonState extends State<StateButton> {
   }
 
   _onTapDown(TapDownDetails event) {
-    print("$TAG _onTapDown");
+    nLog("$TAG _onTapDown");
 
     if (!widget.isSelectButtonMode) {
       select();
@@ -96,7 +98,7 @@ class StateButtonState extends State<StateButton> {
   }
 
   _onTapCancel() {
-    print("$TAG _onTapCancel");
+    nLog("$TAG _onTapCancel");
     if (!widget.isSelectButtonMode) {
       unSelect();
     }
@@ -107,7 +109,7 @@ class StateButtonState extends State<StateButton> {
   }
 
   _onTapUp(TapUpDetails event) {
-    print("$TAG _onTapUp");
+    nLog("$TAG _onTapUp");
     if (!widget.isSelectButtonMode) {
       unSelect();
     }

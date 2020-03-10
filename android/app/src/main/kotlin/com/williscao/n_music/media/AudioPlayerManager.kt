@@ -4,21 +4,19 @@ import android.content.Context
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
-import android.os.Message
 import android.text.TextUtils
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
-import com.google.android.exoplayer2.Timeline
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
-import com.google.android.exoplayer2.upstream.HttpDataSource.HttpDataSourceException
-import com.google.android.exoplayer2.upstream.HttpDataSource.InvalidResponseCodeException
 import com.google.android.exoplayer2.util.Util
+import com.williscao.n_music.MyApplication
 import java.io.File
 
 
@@ -32,6 +30,9 @@ class AudioPlayerManager private constructor() : Player.EventListener {
 
     companion object {
         const val TAG = "AudioPlayerManager"
+        const val OPERATION_PAUSE = 0 // 手动点击了暂停
+        const val OPERATION_NONE = 1  // 当前无任何操作
+        const val OPERATION_RESUME = 2 // 手动操作了恢复播放
 
         val instance = AudioPlayerManagerHolder.instance
     }
@@ -45,9 +46,12 @@ class AudioPlayerManager private constructor() : Player.EventListener {
 
     private var mPlayingAudioPath = ""
 
-    var songCompleteData = MutableLiveData<String>()
-    var progressData = MutableLiveData<ProgressData>()
-    var playingData = MutableLiveData<Boolean>()
+    var songCompleteData = MutableLiveData<String>() // 歌曲播放完成观察者
+    var songErrorData = MutableLiveData<String>()  // 歌曲播放出错观察者
+    var progressData = MutableLiveData<ProgressData>() // 歌曲播放进度观察者
+    var playingStateChangeData = MutableLiveData<Boolean>()  // 歌曲播放状态变化观察者
+
+    private var mOperationType = OPERATION_NONE
 
     private val progressHandler = Handler(Looper.getMainLooper())
     private val progressRunnable: Runnable = object : Runnable {
@@ -59,10 +63,13 @@ class AudioPlayerManager private constructor() : Player.EventListener {
 
     private fun updateProgress() {
         mPlayer?.let {
-            progressData.postValue(ProgressData(mPlayer!!.currentPosition.toInt(), mPlayer!!.duration.toInt()))
+            progressData.postValue(ProgressData(mPlayer!!.currentPosition.toInt(), mPlayer!!.duration.toInt(), mPlayer!!.bufferedPosition.toInt()))
         }
     }
 
+    /**
+     * 根据音频文件路径进行播放
+     */
     fun play(context: Context, audioPath: String): Boolean {
         Log.d(TAG, "play audioPath : $audioPath")
 
@@ -90,48 +97,8 @@ class AudioPlayerManager private constructor() : Player.EventListener {
     }
 
     /**
-     * 根据当前的状态来决定暂停还是播放
+     * 播放前初始化播放器
      */
-    fun resumeOrPause() {
-        mPlayer?.apply {
-            if (playbackState == Player.STATE_READY) {
-                if (isPlaying) {
-                    playWhenReady = false
-                    updateProgress()
-                } else {
-                    playWhenReady = true
-                }
-
-            }
-        }
-    }
-
-    /**
-     * 播放音乐
-     */
-    fun resume() {
-        mPlayer?.apply {
-            if (playbackState == Player.STATE_READY) {
-                if (!isPlaying) {
-                    playWhenReady = true
-                }
-            }
-        }
-    }
-
-    /**
-     * 暂停音乐
-     */
-    fun pause() {
-        mPlayer?.apply {
-            if (playbackState == Player.STATE_READY) {
-                if (isPlaying) {
-                    playWhenReady = false
-                }
-            }
-        }
-    }
-
     private fun initPlayer(context: Context) {
         mPlayer?.apply {
             removeListener(this@AudioPlayerManager)
@@ -145,34 +112,113 @@ class AudioPlayerManager private constructor() : Player.EventListener {
         }
 
         mPlayer!!.addListener(this)
+        // 操作类型复位到none状态
+        mOperationType = OPERATION_NONE
     }
 
+    /**
+     * 根据当前的状态来决定暂停还是播放
+     */
+    fun resumeOrPause() {
+        mPlayer?.apply {
+            if (playbackState == Player.STATE_READY) {
+                if (isPlaying) {
+                    pause()
+                } else {
+                    resume()
+                }
+            }
+        }
+    }
+
+    /**
+     * 播放音乐
+     */
+    fun resume() {
+        mPlayer?.apply {
+            mOperationType = OPERATION_RESUME
+            if (playbackState == Player.STATE_READY) {
+                if (!isPlaying) {
+                    playWhenReady = true
+                }
+            }
+        }
+    }
+
+    /**
+     * 暂停音乐
+     */
+    fun pause() {
+        mPlayer?.apply {
+            mOperationType = OPERATION_PAUSE
+            if (playbackState == Player.STATE_READY) {
+                if (isPlaying) {
+                    playWhenReady = false
+                }
+            }
+        }
+    }
+
+    /**
+     * 拉进度条，修改播放位置
+     */
+    fun seekTo(position: Long) {
+        mPlayer?.apply {
+            seekTo(position)
+        }
+    }
+
+    /**
+     * 设置当前单曲循环模式
+     */
+    fun singleLoop() {
+        mPlayer?.apply {
+            repeatMode = Player.REPEAT_MODE_ONE
+        }
+    }
+
+    /**
+     * 正在播放状态变化
+     */
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         Log.d(TAG, "onIsPlayingChanged isPlaying : $isPlaying")
-        playingData.postValue(isPlaying)
+        playingStateChangeData.postValue(isPlaying)
         progressHandler.removeCallbacks(progressRunnable)
         if (isPlaying) {
             progressHandler.post(progressRunnable)
+        } else {
+            if (mOperationType > OPERATION_PAUSE) {
+                // 在没有任何人为操作而暂停的情况视为音频文件有问题
+                onMusicPlayingError()
+            }
         }
+    }
+
+    /**
+     * 音频播放出问题，音频文件可能损坏
+     */
+    private fun onMusicPlayingError() {
+        Log.d(TAG, "onMusicPlayingError broken file")
+        songErrorData.postValue(mPlayingAudioPath)
     }
 
     override fun onPlayerError(error: ExoPlaybackException) {
         Log.d(TAG, "onPlayerError error : $error")
-        if (error.type == ExoPlaybackException.TYPE_SOURCE) {
-            val cause = error.sourceException
-            if (cause is HttpDataSourceException) { // An HTTP error occurred.
-                // This is the request for which the error occurred.
-                val requestDataSpec = cause.dataSpec
-                // It's possible to find out more about the error both by casting and by
-                // querying the cause.
-                if (cause is InvalidResponseCodeException) {
-                    // Cast to InvalidResponseCodeException and retrieve the response code,
-                    // message and headers.
-                } else { // Try calling httpError.getCause() to retrieve the underlying cause,
-                    // although note that it may be null.
-                }
-            }
-        }
+//        if (error.type == ExoPlaybackException.TYPE_SOURCE) {
+//            val cause = error.sourceException
+//            if (cause is HttpDataSourceException) { // An HTTP error occurred.
+//                // This is the request for which the error occurred.
+//                val requestDataSpec = cause.dataSpec
+//                // It's possible to find out more about the error both by casting and by
+//                // querying the cause.
+//                if (cause is InvalidResponseCodeException) {
+//                    // Cast to InvalidResponseCodeException and retrieve the response code,
+//                    // message and headers.
+//                } else { // Try calling httpError.getCause() to retrieve the underlying cause,
+//                    // although note that it may be null.
+//                }
+//            }
+//        }
     }
 
     override fun onPositionDiscontinuity(reason: Int) {
@@ -184,15 +230,41 @@ class AudioPlayerManager private constructor() : Player.EventListener {
         Log.d(TAG, "onPlayerStateChanged curState : $playbackState, playWhenReady : $playWhenReady")
 
         when (playbackState) {
-            Player.STATE_ENDED -> {
-                progressHandler.removeCallbacks(progressRunnable)
-                mPlayer?.apply {
-                    removeListener(this@AudioPlayerManager)
-                    release()
-                }
-                songCompleteData.postValue(mPlayingAudioPath)
-            }
+            Player.STATE_READY -> if (playWhenReady) onStart()
+            Player.STATE_ENDED -> onComplete()
+            Player.STATE_BUFFERING -> onBuffering()
+            Player.STATE_IDLE -> onPlayerIDLE()
         }
     }
 
+    /**
+     * 音乐播放开始
+     */
+    private fun onStart() {
+        Log.d(TAG, "onStart")
+    }
+
+    private fun onComplete() {
+        Log.d(TAG, "onStart")
+        progressHandler.removeCallbacks(progressRunnable)
+        mPlayer?.apply {
+            removeListener(this@AudioPlayerManager)
+            release()
+        }
+        songCompleteData.postValue(mPlayingAudioPath)
+    }
+
+    /**
+     * 音频缓冲中
+     */
+    private fun onBuffering() {
+
+    }
+
+    /**
+     * 播放器空闲中
+     */
+    private fun onPlayerIDLE() {
+
+    }
 }

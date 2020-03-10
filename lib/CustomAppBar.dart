@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:n_music/Toast.dart';
 import 'package:n_music/main/Constants.dart';
+import 'package:n_music/main/NLog.dart';
 
 class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
   final PreferredSizeWidget bottom;
@@ -124,7 +125,7 @@ class CustomAppBarState extends State<CustomAppBar> {
       }
     }
 
-    print(image);
+    nLog(image);
     return image;
   }
 

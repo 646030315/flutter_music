@@ -8,6 +8,7 @@ import 'package:n_music/main/Constants.dart';
 import 'package:n_music/main/MusicPlayerController.dart';
 import 'package:n_music/tabpages/PageCommon.dart';
 import 'package:n_music/tabpages/PageEuropeAndAmerica.dart';
+import 'package:n_music/main/NLog.dart';
 
 void main() {
   runApp(MyApp());
@@ -58,7 +59,7 @@ class _MyHomePageState extends State<MyHomePage>
       vsync: this,
     );
 
-    print("_MyHomePageState initState");
+    nLog("_MyHomePageState initState");
     _musicPlayController
         ?.addOnMusicPlayingChangeListener(_onMusicPlayingStateChange);
   }
@@ -66,13 +67,13 @@ class _MyHomePageState extends State<MyHomePage>
   @override
   void dispose() {
     super.dispose();
-    print("_MyHomePageState dispose");
+    nLog("_MyHomePageState dispose");
     _musicPlayController
         ?.removeOnMusicPlayingChangeListener(_onMusicPlayingStateChange);
   }
 
   void _onMusicPlayingStateChange(bool isPlaying, int index, Map<String, dynamic> song) {
-    print(
+    nLog(
         "main _onMusicPlayingStateChange isPlaying : $isPlaying, song : $song");
     setState(() {
       _playingSong = song;
@@ -123,7 +124,7 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   _getBottomBar() {
-    print("_getBottomBar $_playingSong");
+    nLog("_getBottomBar $_playingSong");
     return _playingSong == null
         ? Container()
         : BottomPlayBar(

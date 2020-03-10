@@ -2,7 +2,7 @@ const loggable = true;
 
 const LOG_LEVER_CLR = 1;
 
-log(int level, Object o) {
+nLog(Object o, {int level}) {
   if (loggable) {
     print(o);
   }

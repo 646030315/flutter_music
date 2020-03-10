@@ -18,6 +18,7 @@ const val CHANNEL_METHOD_COMPLETE_SONG = "com.williscao.n_music.main/completeSon
 const val CHANNEL_METHOD_PLAYING_STATE = "com.williscao.n_music.main/playingState"
 const val CHANNEL_METHOD_PROGRESS = "com.williscao.n_music.main/progress"
 const val CHANNEL_METHOD_RESUME_OR_PAUSE = "com.williscao.n_music.main/resumeOrPause"
+const val CHANNEL_METHOD_PLAYING_ERROR = "com.williscao.n_music.main/playingError"
 
 class MainActivity : BaseActivity() {
 
@@ -35,6 +36,9 @@ class MainActivity : BaseActivity() {
      */
     private fun initMethodChannel() {
         mMCMusic = MethodChannel(flutterEngine!!.dartExecutor.binaryMessenger, MUSIC_CHANNEL)
+
+        // ------------------------Flutter调原生------------------------
+
         mMCMusic.setMethodCallHandler { call, result ->
             GlobalScope.launch(Dispatchers.Main) {
                 when (call.method) {
@@ -48,16 +52,22 @@ class MainActivity : BaseActivity() {
             }
         }
 
+        // ------------------------原生调Flutter------------------------
+
         AudioPlayerManager.instance.songCompleteData.observeForever {
             mMCMusic.invokeMethod(CHANNEL_METHOD_COMPLETE_SONG, it)
         }
 
-        AudioPlayerManager.instance.playingData.observeForever {
+        AudioPlayerManager.instance.playingStateChangeData.observeForever {
             mMCMusic.invokeMethod(CHANNEL_METHOD_PLAYING_STATE, it)
         }
 
         AudioPlayerManager.instance.progressData.observeForever {
             mMCMusic.invokeMethod(CHANNEL_METHOD_PROGRESS, it.toJson())
+        }
+
+        AudioPlayerManager.instance.songErrorData.observeForever {
+            mMCMusic.invokeMethod(CHANNEL_METHOD_PLAYING_ERROR, it)
         }
     }
 }

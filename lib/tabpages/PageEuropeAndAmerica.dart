@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:n_music/Toast.dart';
 import 'package:n_music/main/Constants.dart';
 import 'package:n_music/main/MusicPlayerController.dart';
+import 'package:n_music/main/NLog.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 typedef OnMusicPlay = void Function(Map<String, dynamic> song);
@@ -27,11 +29,13 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
     super.initState();
     _checkPermissions();
 
-    print("PageEuropeAndAmericaState initState");
+    nLog("PageEuropeAndAmericaState initState");
     widget.musicPlayerController
         ?.addOnMusicLoadCompleteListener(_onMusicLoadComplete);
     widget.musicPlayerController
         ?.addOnMusicPlayingChangeListener(_onMusicPlayingStateChange);
+    widget.musicPlayerController
+        ?.addOnMusicPlayingErrorListener(_onMusicPlayingError);
   }
 
   @override
@@ -42,6 +46,8 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
         ?.removeOnMusicLoadCompleteListener(_onMusicLoadComplete);
     widget.musicPlayerController
         ?.removeOnMusicPlayingChangeListener(_onMusicPlayingStateChange);
+    widget.musicPlayerController
+        ?.removeOnMusicPlayingErrorListener(_onMusicPlayingError);
   }
 
   void _onMusicLoadComplete(List<Map<String, dynamic>> songList) {
@@ -52,11 +58,19 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
 
   void _onMusicPlayingStateChange(
       bool isPlaying, int index, Map<String, dynamic> song) {
-    print("_onMusicPlayingStateChange isPlaying : $isPlaying , song : $song");
+    nLog("_onMusicPlayingStateChange isPlaying : $isPlaying , song : $song");
 
     setState(() {
       _playingIndex = index;
     });
+  }
+
+  void _onMusicPlayingError(int index, Map<String, dynamic> song) {
+    nLog("_onMusicPlayingError index : $index , song : $song");
+    if (_songs[index]["path"] == song["path"]) {
+      _songs[index]["audio_broken"] = true;
+      widget.musicPlayerController?.nextSong();
+    }
   }
 
   /// 权限检测，查看是否需要弹框请求用户权限
@@ -132,17 +146,15 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
             _songs[index]["songName"],
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-                color: _playingIndex == index ? themeColor : Colors.black,
-                fontSize: 16),
+            style:
+                TextStyle(color: _getItemTitleTextColor(index), fontSize: 16),
           ),
           subtitle: Text(
             "${_songs[index]["singerName"]} - ${_songs[index]["album"]}",
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-                color: _playingIndex == index ? themeColor : Colors.grey,
-                fontSize: 12),
+                color: _getItemSubTitleTextColor(index), fontSize: 12),
           ),
           trailing: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -176,11 +188,33 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
     );
   }
 
+  /// 获取标题文字颜色
+  _getItemTitleTextColor(int index) {
+    if (_songs[index]["audio_broken"] ?? false) {
+      return Color(0xFFBDBDBD);
+    }
+    return _playingIndex == index ? themeColor : Colors.black;
+  }
+
+  /// 获取子标题文字颜色
+  _getItemSubTitleTextColor(int index) {
+    if (_songs[index]["audio_broken"] ?? false) {
+      return Color(0xFFBDBDBD);
+    }
+    return _playingIndex == index ? themeColor : Colors.grey;
+  }
+
+  /// item点击监听
   _onItemClick(int position) {
+    if(_songs[position]["audio_broken"] ?? false){
+      Toast.show(context, "音频文件可能已经损坏了，无法播放");
+      return;
+    }
     _playingIndex = position;
     widget.musicPlayerController?.playSong(position);
   }
 
+  /// 音频时长
   _getDuration(int index) {
     if (index >= 0 && index < _songs.length) {
       final int duration = _songs[index]["duration"] ~/ 1000;
