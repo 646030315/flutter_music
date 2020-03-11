@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:n_music/BottomPlayBar.dart';
-import 'package:n_music/CustomAppBar.dart';
+import 'package:n_music/main/MainAppBar.dart';
 import 'package:n_music/DrawerFrame.dart';
 import 'package:n_music/main/Constants.dart';
 import 'package:n_music/main/MusicPlayerController.dart';
@@ -90,7 +90,7 @@ class _MyHomePageState extends State<MyHomePage>
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: CustomAppBar(
+      appBar: MainAppBar(
         statusBarHeight: statusBarHeight,
         bottom: TabBar(
           controller: _tabController,

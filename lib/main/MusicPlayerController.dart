@@ -159,6 +159,10 @@ class MusicPlayerController {
     }
   }
 
+  Map<String, dynamic> curSong() {
+    return songs[playingIndex];
+  }
+
   /// 播放下一首歌
   nextSong() async {
     playSong(loopMode.getNextSong(this));

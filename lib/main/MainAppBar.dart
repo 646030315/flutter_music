@@ -3,15 +3,15 @@ import 'package:n_music/Toast.dart';
 import 'package:n_music/main/Constants.dart';
 import 'package:n_music/main/NLog.dart';
 
-class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
+class MainAppBar extends StatefulWidget implements PreferredSizeWidget {
   final PreferredSizeWidget bottom;
   final statusBarHeight;
 
-  CustomAppBar({this.bottom, this.statusBarHeight});
+  MainAppBar({this.bottom, this.statusBarHeight});
 
   @override
   State<StatefulWidget> createState() {
-    return CustomAppBarState();
+    return MainAppBarState();
   }
 
   @override
@@ -20,7 +20,7 @@ class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
       (bottom?.preferredSize?.height ?? 0.0));
 }
 
-class CustomAppBarState extends State<CustomAppBar> {
+class MainAppBarState extends State<MainAppBar> {
   var _selectedTab = SelectedTabType.MUSIC;
 
   void _handleDrawerOpen() {

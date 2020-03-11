@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:n_music/Toast.dart';
 import 'package:n_music/main/Constants.dart';
 import 'package:n_music/main/NLog.dart';
+import 'package:n_music/play/PagePlay.dart';
 
 import 'main/MusicPlayerController.dart';
 
@@ -72,6 +73,7 @@ class BottomPlayBarState extends State<BottomPlayBar> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      onTap: _onJumpToPlayPage,
       child: Container(
           color: bottomBarColor,
           height: BOTTOM_BAR_HEIGHT,
@@ -151,6 +153,18 @@ class BottomPlayBarState extends State<BottomPlayBar> {
             ],
           )),
     );
+  }
+
+  _onJumpToPlayPage() async {
+    final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PagePlay(
+            musicPlayerController: widget.musicPlayerController,
+          ),
+        ));
+
+    nLog("result from page PagePlay : $result");
   }
 
   /// 展示当前的播放列表
