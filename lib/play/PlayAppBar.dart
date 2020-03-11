@@ -20,6 +20,7 @@ class PlayAppBarState extends State<PlayAppBar> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: widget.preferredSize.height,
       padding: EdgeInsets.only(top: widget.statusBarHeight),
       child: Stack(
         alignment: AlignmentDirectional.bottomStart,
@@ -73,9 +74,15 @@ class PlayAppBarState extends State<PlayAppBar> {
               ],
             ),
           ),
-          Divider(
+          Container(
             height: 1,
-            color: Colors.grey,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0x00ffffff), Color(0xffB3B3B3), Color(0x00ffffff)],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+            ),
           ),
         ],
       ),

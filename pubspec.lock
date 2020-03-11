@@ -102,6 +102,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.6.4"
+  pedantic:
+    dependency: transitive
+    description:
+      name: pedantic
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.8.0+1"
   permission_handler:
     dependency: "direct main"
     description:
@@ -183,7 +190,7 @@ packages:
       name: test_api
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.2.15"
+    version: "0.2.11"
   typed_data:
     dependency: transitive
     description:

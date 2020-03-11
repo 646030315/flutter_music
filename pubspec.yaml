@@ -67,6 +67,7 @@ flutter:
     - abc_ic_menu_share_mtrl_alpha.png
     - icon_back.png
     - fm_run_bg.jpg
+    - play_disc.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
