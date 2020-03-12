@@ -2,12 +2,13 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:n_music/Toast.dart';
-import 'package:n_music/main/Constants.dart';
-import 'package:n_music/main/NLog.dart';
+import 'package:n_music/customwidget/ProgressBar.dart';
+import 'package:n_music/util/Toast.dart';
+import 'package:n_music/util/Constants.dart';
+import 'package:n_music/util/NLog.dart';
 import 'package:n_music/play/PagePlay.dart';
-
-import 'main/MusicPlayerController.dart';
+import 'package:n_music/controller/MusicPlayerController.dart';
+import '../controller/MusicPlayerController.dart';
 
 class BottomPlayBar extends StatefulWidget {
   final Map<String, dynamic> playingSong;
@@ -23,8 +24,9 @@ class BottomPlayBar extends StatefulWidget {
 
 class BottomPlayBarState extends State<BottomPlayBar> {
   bool _isPlaying = false;
-  double _progressWidth = 0;
-  double _bufferedWidth = 0;
+
+  int _progress;
+  int _buffered;
 
   @override
   void initState() {
@@ -57,16 +59,13 @@ class BottomPlayBarState extends State<BottomPlayBar> {
     });
   }
 
-  void _onMusicProgressUpdate(int progressPercent, int bufferedPercent) {
+  void _onMusicProgressUpdate(int progress, int buffered, int duration) {
     setState(() {
-      _progressWidth = (window.physicalSize.width * progressPercent) /
-          (100 * window.devicePixelRatio);
-
-      _bufferedWidth = (window.physicalSize.width * bufferedPercent) /
-          (100 * window.devicePixelRatio);
+      _progress = progress * 100 ~/ duration;
+      _buffered = buffered * 100 ~/ duration;
 
       nLog(
-          "_onMusicProgressUpdate windowWidth : ${window.physicalSize.width} , progress : $progressPercent, progressWidth: $_progressWidth, _bufferedWidth: $_bufferedWidth, devicePixelRatio : ${window.devicePixelRatio}");
+          "_onMusicProgressUpdate _progress : $_progress, _buffered: $_buffered");
     });
   }
 
@@ -140,15 +139,9 @@ class BottomPlayBarState extends State<BottomPlayBar> {
                   ],
                 ),
               ),
-              Container(
-                height: 2,
-                width: _bufferedWidth,
-                color: Colors.grey,
-              ),
-              Container(
-                height: 2,
-                width: _progressWidth,
-                color: themeColor,
+              ProgressBar(
+                progressPercent: _progress,
+                bufferedPercent: _buffered,
               ),
             ],
           )),

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:n_music/Toast.dart';
-import 'package:n_music/main/Constants.dart';
-import 'package:n_music/main/MusicPlayerController.dart';
-import 'package:n_music/main/NLog.dart';
+import 'package:n_music/util/TimeUtils.dart';
+import 'package:n_music/util/Toast.dart';
+import 'package:n_music/util/Constants.dart';
+import 'package:n_music/controller/MusicPlayerController.dart';
+import 'package:n_music/util/NLog.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 typedef OnMusicPlay = void Function(Map<String, dynamic> song);
@@ -218,11 +219,7 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
   _getDuration(int index) {
     if (index >= 0 && index < _songs.length) {
       final int duration = _songs[index]["duration"] ~/ 1000;
-
-      int minute = duration ~/ 60;
-      int second = duration % 60;
-
-      return "${minute <= 9 ? "0" : ""}$minute : ${second <= 9 ? "0" : ""}$second";
+      return formatSongTimeLength(duration);
     }
     return "";
   }

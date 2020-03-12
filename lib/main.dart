@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:flutter/services.dart';
-import 'package:n_music/BottomPlayBar.dart';
+import 'package:n_music/main/BottomPlayBar.dart';
 import 'package:n_music/main/MainAppBar.dart';
-import 'package:n_music/DrawerFrame.dart';
-import 'package:n_music/main/Constants.dart';
-import 'package:n_music/main/MusicPlayerController.dart';
+import 'package:n_music/main/DrawerFrame.dart';
+import 'package:n_music/util/Constants.dart';
+import 'package:n_music/controller/MusicPlayerController.dart';
 import 'package:n_music/tabpages/PageCommon.dart';
 import 'package:n_music/tabpages/PageEuropeAndAmerica.dart';
-import 'package:n_music/main/NLog.dart';
+import 'package:n_music/util/NLog.dart';
 
 void main() {
   runApp(MyApp());

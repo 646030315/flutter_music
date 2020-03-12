@@ -2,12 +2,13 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 import 'package:n_music/loop/LoopMode.dart';
-import 'package:n_music/main/NLog.dart';
+import 'package:n_music/util/NLog.dart';
 
 typedef OnMusicLoadCompleteListener = void Function(
     List<Map<String, dynamic>> songList);
 
-typedef OnMusicProgressListener = void Function(int progress, int buffered);
+typedef OnMusicProgressListener = void Function(
+    int progress, int buffered, int duration);
 
 typedef OnMusicPlayingChangeListener = void Function(
     bool isPlaying, int index, Map<String, dynamic>);
@@ -51,6 +52,7 @@ const CALLBACK_PLAYING_ERROR = "$METHOD_CHANNEL_PREFIX/playingError";
 class MusicPlayerController {
   var _musicMethodChannel;
   int playingIndex = -1;
+  bool isPlaying = false;
   var songs = List<Map<String, dynamic>>();
 
   var loopMode = SequencePlayModeFactory().createLoopMode();
@@ -101,19 +103,19 @@ class MusicPlayerController {
 
   _onProgressUpdate(Map<String, dynamic> progressData) {
     final int progress = progressData["progress"];
+    final int buffered = progressData["buffed"];
     final int duration = progressData["duration"];
-    final int buffed = progressData["buffed"];
-    final int progressPercent = progress * 100 ~/ duration;
-    final int bufferedPercent = buffed * 100 ~/ duration;
+
     nLog(
-        "_onProgressUpdate progress : $progress, duration : $duration, progressPercent : $progressPercent, buffedPercent : $bufferedPercent");
+        "_onProgressUpdate progress : $progress, duration : $duration, progress : $progress, buffed : $buffered");
 
     _onMusicProgressListeners?.forEach((OnMusicProgressListener listener) {
-      listener?.call(progressPercent, bufferedPercent);
+      listener?.call(progress, buffered, duration);
     });
   }
 
   _onPlayingStateChange(bool isPlaying) {
+    this.isPlaying = isPlaying;
     nLog("_onPlayingStateChange isPlaying : $isPlaying");
     if (playingIndex >= 0 && playingIndex < songs.length) {
       _onMusicPlayingChangeListeners?.forEach((element) {
@@ -166,6 +168,11 @@ class MusicPlayerController {
   /// 播放下一首歌
   nextSong() async {
     playSong(loopMode.getNextSong(this));
+  }
+
+  /// 播放上一首歌
+  preSong() async {
+    playSong((playingIndex - 1) % songs.length);
   }
 
   /// 切换循环模式

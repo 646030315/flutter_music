@@ -1,11 +1,14 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/src/scheduler/ticker.dart';
-import 'package:n_music/main/Constants.dart';
-import 'package:n_music/main/MusicPlayerController.dart';
-import 'package:n_music/main/NLog.dart';
+import 'package:n_music/customwidget/ProgressBar.dart';
+import 'package:n_music/util/Constants.dart';
+import 'package:n_music/controller/MusicPlayerController.dart';
+import 'package:n_music/util/NLog.dart';
 import 'package:n_music/play/PlayAppBar.dart';
+import 'dart:math' as math;
+
+import 'package:n_music/util/TimeUtils.dart';
 
 class PagePlay extends StatefulWidget {
   final MusicPlayerController musicPlayerController;
@@ -18,17 +21,27 @@ class PagePlay extends StatefulWidget {
   }
 }
 
-class PagePlayState extends State<PagePlay> implements TickerProvider{
-  Map<String, dynamic> _playingSong;
+class PagePlayState extends State<PagePlay>
+    with SingleTickerProviderStateMixin {
   double _progressWidth = 0;
   double _bufferedWidth = 0;
-  bool _isPlaying = false;
+  int _progress = 0;
+  int _progressPercent = 0;
+  int _bufferedPercent = 0;
+  int _duration = 0;
+
+  AnimationController controller;
 
   @override
   void initState() {
     super.initState();
+    controller = new AnimationController(
+        duration: const Duration(milliseconds: 60000), vsync: this);
+    controller.addListener(() {
+      setState(() {});
+    });
+    controller.repeat();
 
-    _playingSong = widget.musicPlayerController.curSong();
     nLog("PagePlay initState");
 
     widget.musicPlayerController
@@ -42,7 +55,8 @@ class PagePlayState extends State<PagePlay> implements TickerProvider{
   @override
   void dispose() {
     super.dispose();
-
+    nLog("animator controller do dispose");
+    controller.dispose();
     widget.musicPlayerController
         ?.removeOnMusicPlayingChangeListener(_onMusicPlayingStateChange);
     widget.musicPlayerController
@@ -56,22 +70,21 @@ class PagePlayState extends State<PagePlay> implements TickerProvider{
     final statusBarHeight = MediaQuery.of(context).padding.top;
     return Scaffold(
       appBar: PlayAppBar(
-          statusBarHeight: statusBarHeight, playingSong: _playingSong),
+          statusBarHeight: statusBarHeight,
+          playingSong: widget.musicPlayerController.curSong()),
       extendBodyBehindAppBar: true,
       body: Stack(
         alignment: AlignmentDirectional.bottomStart,
         children: <Widget>[
           _getBigImageBg(),
           _getBody(),
-          _getBottomController(),
+          _getBottomView(),
         ],
       ),
     );
   }
 
   _getBigImageBg() {
-    nLog("_getBigImageBg");
-
     return ConstrainedBox(
       child: Image.asset(
         "fm_run_bg.jpg",
@@ -81,8 +94,48 @@ class PagePlayState extends State<PagePlay> implements TickerProvider{
     );
   }
 
+  _getBottomView() {
+    return Container(
+      height: 110,
+      child: Column(
+        children: <Widget>[_getSeekBar(), _getBottomController()],
+      ),
+    );
+  }
+
+  _getSeekBar() {
+    return Container(
+      padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+      alignment: Alignment.center,
+      height: 20,
+      child: Row(
+        children: <Widget>[
+          Container(
+            child: Text(
+              formatSongTimeLength(_progress),
+              style: TextStyle(color: Colors.white, fontSize: 12),
+            ),
+          ),
+          Expanded(
+              child: Container(
+            padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+            child: ProgressBar(
+              progressPercent: _progressPercent,
+              bufferedPercent: _bufferedPercent,
+            ),
+          )),
+          Container(
+            child: Text(
+              formatSongTimeLength(_duration),
+              style: TextStyle(color: Colors.white, fontSize: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   _getBody() {
-    AnimationController ac = AnimationController(duration: const Duration(microseconds: 30 * 1000), vsync: this);
     double diskSize =
         (window.physicalSize.width * 2) / (3 * window.devicePixelRatio);
     return Container(
@@ -107,30 +160,14 @@ class PagePlayState extends State<PagePlay> implements TickerProvider{
                     TITLE_BAR_HEIGHT +
                     50 +
                     (diskSize / 6)),
-            child: CircleAvatar(
-              radius: diskSize / 3,
-              backgroundImage: AssetImage(AVATAR_URI),
-            ),
-          ),
-          RotationTransition(
-            turns: ac,
-            alignment: Alignment.center,
-            child: Container(
-              width: diskSize * 2 / 3,
-              height: diskSize * 2 / 3,
-              margin: EdgeInsets.only(
-                  top: MediaQuery.of(context).padding.top +
-                      TITLE_BAR_HEIGHT +
-                      50 +
-                      (diskSize / 6)),
-              child: ClipOval(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(
-                      sigmaX: BLUR_SIGMA_X, sigmaY: BLUR_SIGMA_Y),
-                  child: Container(
-                    color: Colors.white.withOpacity(0),
-                  ),
-                ),
+            width: diskSize * 2 / 3,
+            height: diskSize * 2 / 3,
+            child: Transform(
+              transform: Matrix4.rotationZ((controller.value) * math.pi * 2.0),
+              alignment: Alignment.center,
+              child: CircleAvatar(
+                radius: diskSize / 3,
+                backgroundImage: AssetImage(AVATAR_URI),
               ),
             ),
           ),
@@ -140,17 +177,102 @@ class PagePlayState extends State<PagePlay> implements TickerProvider{
   }
 
   _getBottomController() {
-    return Container();
+    final double bottomPadding = 20;
+    final double containerHeight = 70;
+    return Container(
+      height: bottomPadding + containerHeight,
+      padding: EdgeInsets.only(bottom: bottomPadding),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Expanded(
+            child: GestureDetector(
+              onTap: _onSwitchLoopMode,
+              child: Container(
+                height: containerHeight,
+                alignment: Alignment.center,
+                child: Text(
+                  widget.musicPlayerController.getLoopModeName(),
+                  style: TextStyle(color: Colors.white, fontSize: 12),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+                onTap: _onPreSongClick,
+                child: Container(
+                  height: containerHeight,
+                  alignment: Alignment.center,
+                  child: Image.asset("play_btn_prev.png"),
+                )),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: _onPauseResumeClick,
+              child: Container(
+                height: containerHeight,
+                alignment: Alignment.center,
+                child: Image.asset(!widget.musicPlayerController.isPlaying
+                    ? "play_btn_play.png"
+                    : "play_btn_pause.png"),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+                onTap: _onNextClick,
+                child: Container(
+                  height: containerHeight,
+                  alignment: Alignment.center,
+                  child: Image.asset(
+                    "play_btn_next.png",
+                    color: Colors.white,
+                  ),
+                )),
+          ),
+          Expanded(
+            child: GestureDetector(
+                onTap: _songListClick,
+                child: Container(
+                  height: containerHeight,
+                  alignment: Alignment.center,
+                  child: Image.asset(
+                    "play_icn_src_prs.png",
+                    width: 55,
+                    height: 55,
+                  ),
+                )),
+          ),
+        ],
+      ),
+    );
   }
+
+  void _onSwitchLoopMode() {
+    widget.musicPlayerController.switchLoopMode();
+    setState(() {});
+  }
+
+  void _onPreSongClick() {
+    widget.musicPlayerController.preSong();
+  }
+
+  void _onPauseResumeClick() {
+    widget.musicPlayerController.pauseOrResume();
+  }
+
+  void _onNextClick() {
+    widget.musicPlayerController.nextSong();
+  }
+
+  void _songListClick() {}
 
   void _onMusicPlayingStateChange(
       bool isPlaying, int index, Map<String, dynamic> song) {
     nLog("_onMusicPlayingStateChange isPlaying : $isPlaying , song : $song");
 
-    setState(() {
-      _playingSong = song;
-      _isPlaying = isPlaying;
-    });
+    setState(() {});
   }
 
   void _onMusicPlayingError(int index, Map<String, dynamic> song) {
@@ -161,21 +283,18 @@ class PagePlayState extends State<PagePlay> implements TickerProvider{
     }
   }
 
-  void _onMusicProgressUpdate(int progressPercent, int bufferedPercent) {
+  void _onMusicProgressUpdate(int progress, int buffered, int duration) {
     setState(() {
-      _progressWidth = (window.physicalSize.width * progressPercent) /
+      _progressPercent = progress * 100 ~/ duration;
+      _bufferedPercent = buffered * 100 ~/ duration;
+
+      _progressWidth = (window.physicalSize.width * _progressPercent) /
+          (100 * window.devicePixelRatio);
+      _bufferedWidth = (window.physicalSize.width * _bufferedPercent) /
           (100 * window.devicePixelRatio);
 
-      _bufferedWidth = (window.physicalSize.width * bufferedPercent) /
-          (100 * window.devicePixelRatio);
-
-      nLog(
-          "_onMusicProgressUpdate windowWidth : ${window.physicalSize.width} , progress : $progressPercent, progressWidth: $_progressWidth, _bufferedWidth: $_bufferedWidth, devicePixelRatio : ${window.devicePixelRatio}");
+      _progress = progress ~/ 1000;
+      _duration = duration ~/ 1000;
     });
-  }
-
-  @override
-  Ticker createTicker(onTick) {
-    return Ticker(onTick);
   }
 }

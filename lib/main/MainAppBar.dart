@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:n_music/Toast.dart';
-import 'package:n_music/main/Constants.dart';
-import 'package:n_music/main/NLog.dart';
+import 'package:n_music/util/Toast.dart';
+import 'package:n_music/util/Constants.dart';
+import 'package:n_music/util/NLog.dart';
 
 class MainAppBar extends StatefulWidget implements PreferredSizeWidget {
   final PreferredSizeWidget bottom;

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:n_music/main/Constants.dart';
+import 'package:n_music/util/Constants.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class PageMain extends StatefulWidget {
@@ -89,17 +89,5 @@ class PageMainState extends State<PageMain>
     setState(() {
       _permissionState = granted ? PERMISSION_GRANT : PERMISSION_DENY;
     });
-  }
-
-  _onTabClick(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  _getTabView() {
-//    return Center(
-//      child: Text(_tabs[_selectedIndex]),
-//    );
   }
 }

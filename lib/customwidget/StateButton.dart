@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'NLog.dart';
+import '../util/NLog.dart';
 
 typedef OnTapCallback = void Function();
 typedef OnTapUpCallback = void Function(TapUpDetails event);
@@ -44,6 +44,11 @@ class StateButtonState extends State<StateButton> {
 
   @override
   Widget build(BuildContext context) {
+
+    final double width = MediaQuery.of(context).size.width;
+
+    nLog("StateButtonState width: $width");
+
     return GestureDetector(
       onTap: _onTap,
       onTapDown: _onTapDown,

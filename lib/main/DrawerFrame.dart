@@ -1,9 +1,10 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:n_music/Toast.dart';
+import 'package:n_music/util/NLog.dart';
+import 'package:n_music/util/Toast.dart';
 
-import 'package:n_music/main/Constants.dart';
+import 'package:n_music/util/Constants.dart';
 
 class DrawerFrame extends StatefulWidget {
   @override
@@ -15,6 +16,10 @@ class DrawerFrame extends StatefulWidget {
 class DrawerFrameState extends State<DrawerFrame> {
   @override
   Widget build(BuildContext context) {
+    final double width = MediaQuery.of(context).size.width;
+
+    nLog("DrawerFrameState width: $width");
+
     return Column(
       children: <Widget>[
         Container(

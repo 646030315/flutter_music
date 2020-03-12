@@ -68,6 +68,13 @@ flutter:
     - icon_back.png
     - fm_run_bg.jpg
     - play_disc.png
+    - play_btn_prev.png
+    - play_icn_src_prs.png
+    - play_btn_play.png
+    - play_btn_play_prs.png
+    - play_btn_next.png
+    - play_btn_pause.png
+    - play_btn_pause_prs.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
