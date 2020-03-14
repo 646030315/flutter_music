@@ -24,12 +24,12 @@ import java.util.ArrayList
 
 class SongViewModel : ViewModel() {
 
-    fun loadSongs(context: Context, result: MethodChannel.Result) {
+    fun loadSongs(context: Context, result: MethodChannel.Result, forceLoad: Boolean = false) {
         GlobalScope.launch(Dispatchers.Main) {
             try {
                 var songs: List<String>? = null
                 withContext(Dispatchers.IO) {
-                    songs = SongRepository.getInstance().getSongs(context).map {
+                    songs = SongRepository.getInstance().getSongs(context, forceLoad).map {
                         return@map it.toJson()
                     }
                 }
@@ -66,6 +66,10 @@ class SongViewModel : ViewModel() {
 
     fun resumeOrPause() {
         AudioPlayerManager.instance.resumeOrPause()
+    }
+
+    fun seekToPosition(percent: Int) {
+        AudioPlayerManager.instance.seekTo(percent)
     }
 
 }

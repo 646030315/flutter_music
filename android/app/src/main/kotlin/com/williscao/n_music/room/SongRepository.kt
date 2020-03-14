@@ -31,79 +31,84 @@ class SongRepository {
      * 1. room数据库获取：从媒体库扫描到的歌曲然后保存下来。如果room数据库没有就从媒体库进行扫描
      * 2. 媒体库扫描
      */
-    fun getSongs(context: Context): MutableList<Song> {
-        synchronized(this){
-            // 首先检查我们的本地数据库有没有
-            val dao = SongDatabase.INSTANCE.songDao()
-            var songs = dao.selectAll()
-            val hasSongs = songs.isNotEmpty()
+    fun getSongs(context: Context, forceLoad: Boolean = false): MutableList<Song> {
+        synchronized(this) {
+            var songs: MutableList<Song>? = null
+            if (!forceLoad) {
+                songs = SongDatabase.INSTANCE.songDao().selectAll()
+            }
+            val hasSongs = songs?.isNotEmpty() ?: false
             if (!hasSongs) {
-                // 我们的本地数据库有没有保存扫描到的歌曲，我们进行本地磁盘扫描
-                // 获取媒体库音乐，is_ringtone == 0过滤手机铃声，title COLLATE LOCALIZED ASC 搜索的排序是 先显示中文，然后显示英文，分别按照字母的升序显示，按照产品需求，先显示英文
-                val sortOrder = MediaStore.Audio.Media.TITLE + " COLLATE LOCALIZED ASC"
-
-                val cursor = context.contentResolver.query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, mProjection, "", arrayOf(), sortOrder)
-
-                // 如果没有扫描到歌曲
-                if (cursor == null || cursor.count == 0) {
-                    cursor?.close()
-                    return ArrayList()
-                }
-
-                // 用来记录歌曲名，当歌曲名重复之后，需要后面加序号处理： 稻香   稻香(1)   稻香(2)   稻香(3)
-                val titleRecord = HashMap<String, Int>()
-                // 开始遍历扫描到的歌曲
-                cursor.moveToFirst()
-                var song: Song?
-                songs = ArrayList()
-                val englishSong = ArrayList<Song>()
-                val chineseSong = ArrayList<Song>()
-                var id = 0
-                while (cursor.moveToNext()) {
-                    val path = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.AudioColumns.DATA))
-                    val file = File(path)
-                    if (file.exists() && file.isFile) {
-                        var title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.AudioColumns.TITLE)).trim()
-                        val record = if (titleRecord[title] == null) 1 else {
-                            titleRecord[title]!!.plus(1)
-                        } // 当前歌曲的出现次数
-                        titleRecord[title] = record
-                        if (record > 1) {
-                            title += " (" + (record - 1) + ")" // 后面的序号比出现次数少一  -> 稻香   稻香(1)   稻香(2)   稻香(3)
-                        }
-                        song = Song()
-                        song.songName = title
-                        song.id = ++id
-                        song.path = path
-
-                        song.fileName = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.AudioColumns.DISPLAY_NAME)).trim()
-                        song.duration = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.AudioColumns.DURATION))
-                        song.songID = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.AudioColumns._ID))
-                        song.albumID = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.AudioColumns.ALBUM_ID))
-                        song.singerName = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.AudioColumns.ARTIST)).trim()
-                        song.album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.AudioColumns.ALBUM)).trim()
-                        if (isChineseSong(title)) {
-                            chineseSong.add(song)
-                        } else {
-                            englishSong.add(song)
-                        }
-                    }
-                }
-
-                songs.addAll(englishSong)
-                songs.addAll(chineseSong)
-
-                dao.insertSongs(songs)
-                cursor.close()
-                titleRecord.clear()
+                songs = doLoadSongsFromMedia(context)
             }
 
-            songs.sortWith(Comparator { o1, o2 ->
+            songs?.sortWith(Comparator { o1, o2 ->
                 o1.id - o2.id
             })
 
-            return songs
+            return songs ?: arrayListOf()
         }
+    }
+
+    private fun doLoadSongsFromMedia(context: Context): MutableList<Song> {
+        // 我们的本地数据库有没有保存扫描到的歌曲，我们进行本地磁盘扫描
+        // 获取媒体库音乐，is_ringtone == 0过滤手机铃声，title COLLATE LOCALIZED ASC 搜索的排序是 先显示中文，然后显示英文，分别按照字母的升序显示，按照产品需求，先显示英文
+        val sortOrder = MediaStore.Audio.Media.TITLE + " COLLATE LOCALIZED ASC"
+        val cursor = context.contentResolver.query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, mProjection, "", arrayOf(), sortOrder)
+
+        // 如果没有扫描到歌曲
+        if (cursor == null || cursor.count == 0) {
+            cursor?.close()
+            return arrayListOf()
+        }
+
+        // 用来记录歌曲名，当歌曲名重复之后，需要后面加序号处理： 稻香   稻香(1)   稻香(2)   稻香(3)
+        val titleRecord = HashMap<String, Int>()
+        // 开始遍历扫描到的歌曲
+        cursor.moveToFirst()
+        var song: Song?
+        val songs = arrayListOf<Song>()
+        val englishSong = ArrayList<Song>()
+        val chineseSong = ArrayList<Song>()
+        var id = 0
+        while (cursor.moveToNext()) {
+            val path = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.AudioColumns.DATA))
+            val file = File(path)
+            if (file.exists() && file.isFile) {
+                var title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.AudioColumns.TITLE)).trim()
+                val record = if (titleRecord[title] == null) 1 else {
+                    titleRecord[title]!!.plus(1)
+                } // 当前歌曲的出现次数
+                titleRecord[title] = record
+                if (record > 1) {
+                    title += " (" + (record - 1) + ")" // 后面的序号比出现次数少一  -> 稻香   稻香(1)   稻香(2)   稻香(3)
+                }
+                song = Song()
+                song.songName = title
+                song.id = ++id
+                song.path = path
+
+                song.fileName = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.AudioColumns.DISPLAY_NAME)).trim()
+                song.duration = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.AudioColumns.DURATION))
+                song.songID = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.AudioColumns._ID))
+                song.albumID = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.AudioColumns.ALBUM_ID))
+                song.singerName = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.AudioColumns.ARTIST)).trim()
+                song.album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.AudioColumns.ALBUM)).trim()
+                if (isChineseSong(title)) {
+                    chineseSong.add(song)
+                } else {
+                    englishSong.add(song)
+                }
+            }
+        }
+
+        songs.addAll(englishSong)
+        songs.addAll(chineseSong)
+
+        SongDatabase.INSTANCE.songDao().insertSongs(songs)
+        cursor.close()
+        titleRecord.clear()
+        return songs
     }
 
     fun deleteSong(song: Song) {

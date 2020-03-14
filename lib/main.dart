@@ -91,6 +91,7 @@ class _MyHomePageState extends State<MyHomePage>
     // than having to individually change instances of widgets.
     return Scaffold(
       appBar: MainAppBar(
+        musicController: _musicPlayController,
         statusBarHeight: statusBarHeight,
         bottom: TabBar(
           controller: _tabController,

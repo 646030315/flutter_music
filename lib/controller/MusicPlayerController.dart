@@ -25,6 +25,9 @@ const METHOD_CHANNEL_NAME = "$METHOD_CHANNEL_PREFIX/music";
 /// method channel 获取手机音频列表
 const METHOD_GET_SONG_LIST = "$METHOD_CHANNEL_PREFIX/getSongList";
 
+/// method channel 获取手机音频列表
+const METHOD_FORCE_GET_SONG_LIST = "$METHOD_CHANNEL_PREFIX/getSongListForce";
+
 /// method channel 播放指定歌曲
 const METHOD_PLAY_SONG = "$METHOD_CHANNEL_PREFIX/playSong";
 
@@ -36,6 +39,9 @@ const METHOD_RESUME_PLAY = "$METHOD_CHANNEL_PREFIX/resumeSong";
 
 /// method channel 恢复播放
 const METHOD_RESUME_OR_PAUSE = "$METHOD_CHANNEL_PREFIX/resumeOrPause";
+
+/// method channel 拖拽进度条
+const METHOD_SEEK_POSITION = "$METHOD_CHANNEL_PREFIX/seekPosition";
 
 /// method channel 歌曲完成回调
 const CALLBACK_COMPLETE_SONG = "$METHOD_CHANNEL_PREFIX/completeSong";
@@ -136,9 +142,9 @@ class MusicPlayerController {
   }
 
   /// 获取歌曲列表
-  getSongList() async {
-    final originListSongs =
-        await _musicMethodChannel.invokeListMethod(METHOD_GET_SONG_LIST);
+  getSongList({bool forceLoad = false}) async {
+    final originListSongs = await _musicMethodChannel.invokeListMethod(
+        !forceLoad ? METHOD_GET_SONG_LIST : METHOD_FORCE_GET_SONG_LIST);
 
     songs = List<Map<String, dynamic>>.from(
         originListSongs.map((element) => jsonDecode(element)));
@@ -159,6 +165,13 @@ class MusicPlayerController {
       final path = songs[index]["path"];
       await _musicMethodChannel.invokeListMethod(METHOD_PLAY_SONG, path);
     }
+  }
+
+  /// 播放歌曲
+  /// @param index 将要播放的歌曲的index
+  seekTo(double percent) async {
+    await _musicMethodChannel.invokeListMethod(
+        METHOD_SEEK_POSITION, percent.toInt());
   }
 
   Map<String, dynamic> curSong() {

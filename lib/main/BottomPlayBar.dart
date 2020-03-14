@@ -140,6 +140,7 @@ class BottomPlayBarState extends State<BottomPlayBar> {
                 ),
               ),
               ProgressBar(
+                needDrag: false,
                 progressPercent: _progress,
                 bufferedPercent: _buffered,
               ),

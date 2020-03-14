@@ -23,8 +23,6 @@ class PagePlay extends StatefulWidget {
 
 class PagePlayState extends State<PagePlay>
     with SingleTickerProviderStateMixin {
-  double _progressWidth = 0;
-  double _bufferedWidth = 0;
   int _progress = 0;
   int _progressPercent = 0;
   int _bufferedPercent = 0;
@@ -37,9 +35,7 @@ class PagePlayState extends State<PagePlay>
     super.initState();
     controller = new AnimationController(
         duration: const Duration(milliseconds: 60000), vsync: this);
-    controller.addListener(() {
-      setState(() {});
-    });
+    controller.addListener(_diskRotateListener);
     controller.repeat();
 
     nLog("PagePlay initState");
@@ -52,11 +48,19 @@ class PagePlayState extends State<PagePlay>
         ?.addOnMusicProgressListener(_onMusicProgressUpdate);
   }
 
+  void _diskRotateListener() {
+    setState(() {});
+  }
+
   @override
   void dispose() {
+    controller.stop();
+    controller.removeListener(_diskRotateListener);
+    controller.dispose();
+
     super.dispose();
     nLog("animator controller do dispose");
-    controller.dispose();
+
     widget.musicPlayerController
         ?.removeOnMusicPlayingChangeListener(_onMusicPlayingStateChange);
     widget.musicPlayerController
@@ -117,12 +121,11 @@ class PagePlayState extends State<PagePlay>
             ),
           ),
           Expanded(
-              child: Container(
-            padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-            child: ProgressBar(
-              progressPercent: _progressPercent,
-              bufferedPercent: _bufferedPercent,
-            ),
+              child: ProgressBar(
+            onSeekToListener: _onMusicSeek,
+            needDrag: true,
+            progressPercent: _progressPercent,
+            bufferedPercent: _bufferedPercent,
           )),
           Container(
             child: Text(
@@ -133,6 +136,10 @@ class PagePlayState extends State<PagePlay>
         ],
       ),
     );
+  }
+
+  _onMusicSeek(double percent) {
+    widget.musicPlayerController?.seekTo(percent);
   }
 
   _getBody() {
@@ -287,11 +294,6 @@ class PagePlayState extends State<PagePlay>
     setState(() {
       _progressPercent = progress * 100 ~/ duration;
       _bufferedPercent = buffered * 100 ~/ duration;
-
-      _progressWidth = (window.physicalSize.width * _progressPercent) /
-          (100 * window.devicePixelRatio);
-      _bufferedWidth = (window.physicalSize.width * _bufferedPercent) /
-          (100 * window.devicePixelRatio);
 
       _progress = progress ~/ 1000;
       _duration = duration ~/ 1000;

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:n_music/util/Toast.dart';
+import 'package:n_music/controller/MusicPlayerController.dart';
 import 'package:n_music/util/Constants.dart';
 import 'package:n_music/util/NLog.dart';
 
 class MainAppBar extends StatefulWidget implements PreferredSizeWidget {
   final PreferredSizeWidget bottom;
-  final statusBarHeight;
+  final double statusBarHeight;
+  final MusicPlayerController musicController;
 
-  MainAppBar({this.bottom, this.statusBarHeight});
+  MainAppBar({this.bottom, this.statusBarHeight, this.musicController});
 
   @override
   State<StatefulWidget> createState() {
@@ -130,7 +131,8 @@ class MainAppBarState extends State<MainAppBar> {
   }
 
   _onSearchClick() {
-    Toast.show(context, "_onSearchClick");
+    nLog("_onSearchClick to force load music from media");
+    widget.musicController?.getSongList(forceLoad: true);
   }
 }
 

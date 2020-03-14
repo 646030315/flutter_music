@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 
 const val MUSIC_CHANNEL = "com.williscao.n_music.main/music"
 const val CHANNEL_METHOD_GET_SONG_LIST = "com.williscao.n_music.main/getSongList"
+const val CHANNEL_METHOD_FORCE_GET_SONG_LIST = "com.williscao.n_music.main/getSongListForce"
 const val CHANNEL_METHOD_PLAY_SONG = "com.williscao.n_music.main/playSong"
 const val CHANNEL_METHOD_PAUSE_SONG = "com.williscao.n_music.main/pauseSong"
 const val CHANNEL_METHOD_RESUME_SONG = "com.williscao.n_music.main/resumeSong"
@@ -19,6 +20,7 @@ const val CHANNEL_METHOD_PLAYING_STATE = "com.williscao.n_music.main/playingStat
 const val CHANNEL_METHOD_PROGRESS = "com.williscao.n_music.main/progress"
 const val CHANNEL_METHOD_RESUME_OR_PAUSE = "com.williscao.n_music.main/resumeOrPause"
 const val CHANNEL_METHOD_PLAYING_ERROR = "com.williscao.n_music.main/playingError"
+const val CHANNEL_METHOD_SEEK_POSITION = "com.williscao.n_music.main/seekPosition"
 
 class MainActivity : BaseActivity() {
 
@@ -43,10 +45,12 @@ class MainActivity : BaseActivity() {
             GlobalScope.launch(Dispatchers.Main) {
                 when (call.method) {
                     CHANNEL_METHOD_GET_SONG_LIST -> mSvm.loadSongs(context, result)
+                    CHANNEL_METHOD_FORCE_GET_SONG_LIST -> mSvm.loadSongs(context, result, true)
                     CHANNEL_METHOD_PLAY_SONG -> mSvm.playSong(context, call.arguments as String, result)
                     CHANNEL_METHOD_PAUSE_SONG -> mSvm.pauseSong()
                     CHANNEL_METHOD_RESUME_SONG -> mSvm.resumeSong()
                     CHANNEL_METHOD_RESUME_OR_PAUSE -> mSvm.resumeOrPause()
+                    CHANNEL_METHOD_SEEK_POSITION -> mSvm.seekToPosition(call.arguments as Int)
                     else -> result.notImplemented()
                 }
             }

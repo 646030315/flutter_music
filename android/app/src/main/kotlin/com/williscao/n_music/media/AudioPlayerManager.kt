@@ -6,7 +6,6 @@ import android.os.Handler
 import android.os.Looper
 import android.text.TextUtils
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.Player
@@ -16,7 +15,6 @@ import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
-import com.williscao.n_music.MyApplication
 import java.io.File
 
 
@@ -30,9 +28,10 @@ class AudioPlayerManager private constructor() : Player.EventListener {
 
     companion object {
         const val TAG = "AudioPlayerManager"
-        const val OPERATION_PAUSE = 0 // 手动点击了暂停
-        const val OPERATION_NONE = 1  // 当前无任何操作
-        const val OPERATION_RESUME = 2 // 手动操作了恢复播放
+        const val OPERATION_SEEK = 0 // 手动拖拽进度条
+        const val OPERATION_PAUSE = 1 // 手动点击了暂停
+        const val OPERATION_NONE = 2  // 当前无任何操作
+        const val OPERATION_RESUME = 3 // 恢复播放
 
         val instance = AudioPlayerManagerHolder.instance
     }
@@ -162,18 +161,11 @@ class AudioPlayerManager private constructor() : Player.EventListener {
     /**
      * 拉进度条，修改播放位置
      */
-    fun seekTo(position: Long) {
+    fun seekTo(percent: Int) {
         mPlayer?.apply {
+            mOperationType = OPERATION_SEEK
+            val position = percent * duration / 100
             seekTo(position)
-        }
-    }
-
-    /**
-     * 设置当前单曲循环模式
-     */
-    fun singleLoop() {
-        mPlayer?.apply {
-            repeatMode = Player.REPEAT_MODE_ONE
         }
     }
 
