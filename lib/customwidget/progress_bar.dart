@@ -14,11 +14,7 @@ class ProgressBar extends StatefulWidget {
   final bool needDrag;
   final OnDragEndListener onSeekToListener;
 
-  ProgressBar(
-      {this.progressPercent,
-      this.bufferedPercent,
-      this.needDrag,
-      this.onSeekToListener});
+  ProgressBar({this.progressPercent, this.bufferedPercent, this.needDrag, this.onSeekToListener});
 
   @override
   State<StatefulWidget> createState() {
@@ -43,71 +39,54 @@ class ProgressBarState extends State<ProgressBar> {
     WidgetsBinding.instance.addPostFrameCallback(_afterBuild);
 
     return GestureDetector(
-      onHorizontalDragDown: _onHorizontalDragDown,
-      onHorizontalDragStart: _onHorizontalDragStart,
-      onHorizontalDragEnd: _onHorizontalDragEnd,
-      onHorizontalDragUpdate: _onHorizontalDragUpdate,
-
-      onPanDown: _onPanDown,
-      onPanStart: _onPanStart,
-      onPanEnd: _onPanEnd,
-      onPanUpdate: _onPanUpdate,
-
-
-      child: Stack(
-        children: <Widget>[
+        onHorizontalDragDown: _onHorizontalDragDown,
+        onHorizontalDragStart: _onHorizontalDragStart,
+        onHorizontalDragEnd: _onHorizontalDragEnd,
+        onHorizontalDragUpdate: _onHorizontalDragUpdate,
+        onPanDown: _onPanDown,
+        onPanStart: _onPanStart,
+        onPanEnd: _onPanEnd,
+        onPanUpdate: _onPanUpdate,
+        child: Stack(children: <Widget>[
           Container(
               height: _getContainerHeight(),
               alignment: Alignment.center,
-              child: Stack(
-                children: <Widget>[
-                  InkWell(
+              child: Stack(children: <Widget>[
+                InkWell(
                     onTap: () => nLog("ProgressBarState ${context.size.width}"),
                     child: Container(
-                      margin: EdgeInsets.only(
-                          left: _getHorizontalMargin(),
-                          right: _getHorizontalMargin()),
+                      margin: EdgeInsets.only(left: _getHorizontalMargin(), right: _getHorizontalMargin()),
                       height: 2,
                       color: Colors.white,
-                    ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.only(
-                        left: _getHorizontalMargin(),
-                        right: _getHorizontalMargin()),
+                    )),
+                Container(
+                    margin: EdgeInsets.only(left: _getHorizontalMargin(), right: _getHorizontalMargin()),
                     height: 2,
                     width: _bufferedWidth,
-                    color: Colors.grey,
-                  ),
-                  Container(
-                    margin: EdgeInsets.only(
-                        left: _getHorizontalMargin(),
-                        right: _getHorizontalMargin()),
+                    color: Colors.grey),
+                Container(
+                    margin: EdgeInsets.only(left: _getHorizontalMargin(), right: _getHorizontalMargin()),
                     height: 2,
                     width: _progressWidth,
-                    color: themeColor,
-                  ),
-                ],
-              )),
-          _getSeekBall(),
-        ],
-      ),
-    );
+                    color: themeColor)
+              ])),
+          _getSeekBall()
+        ]));
   }
 
-  _onPanDown(DragDownDetails details){
+  _onPanDown(DragDownDetails details) {
     nLog("_onPanDown details.x : ${details.localPosition.dx}");
   }
 
-  _onPanStart(DragStartDetails details){
+  _onPanStart(DragStartDetails details) {
     nLog("_onPanStart details.x : ${details.localPosition.dx}");
   }
 
-  _onPanEnd(DragEndDetails details){
+  _onPanEnd(DragEndDetails details) {
     nLog("_onPanEnd");
   }
 
-  _onPanUpdate(DragUpdateDetails details){
+  _onPanUpdate(DragUpdateDetails details) {
     nLog("_onPanUpdate details.x : ${details.localPosition.dx}");
   }
 
@@ -124,16 +103,11 @@ class ProgressBarState extends State<ProgressBar> {
         ? Container(
             height: _getContainerHeight(),
             width: _ballRadius * 2,
-            margin: EdgeInsets.only(
-                left: _isDragging ? _onDragX : (_progressWidth + 5)),
+            margin: EdgeInsets.only(left: _isDragging ? _onDragX : (_progressWidth + 5)),
             child: Container(
-              height: _getContainerHeight(),
-              width: _ballRadius * 2,
-              child: CustomPaint(
-                painter: BallPainter(ballSize: _ballRadius * 2),
-              ),
-            ),
-          )
+                height: _getContainerHeight(),
+                width: _ballRadius * 2,
+                child: CustomPaint(painter: BallPainter(ballSize: _ballRadius * 2))))
         : Container(
             height: _getContainerHeight(),
           );
@@ -157,30 +131,26 @@ class ProgressBarState extends State<ProgressBar> {
     nLog("_onHorizontalDragEnd details : $details");
     _isDragging = false;
 
-    final double seekToPercent =
-        (_onDragX - _horizontalMargin) * 100 / _selfWidth;
+    final double seekToPercent = (_onDragX - _horizontalMargin) * 100 / _selfWidth;
 
     widget.onSeekToListener?.call(seekToPercent);
     _onDragX = 0;
   }
 
   _onHorizontalDragUpdate(DragUpdateDetails details) {
-    nLog(
-        "_onHorizontalDragUpdate localX : ${details.localPosition.dx}, globalX : ${details.globalPosition.dx}");
+    nLog("_onHorizontalDragUpdate localX : ${details.localPosition.dx}, globalX : ${details.globalPosition.dx}");
     _onDragX = _getDragX(details.localPosition.dx);
     setState(() {});
   }
 
   _getDragX(double curX) {
-    return math.min(math.max(_horizontalMargin - _ballRadius, curX),
-        _selfWidth - (_horizontalMargin + _ballRadius));
+    return math.min(math.max(_horizontalMargin - _ballRadius, curX), _selfWidth - (_horizontalMargin + _ballRadius));
   }
 
   _afterBuild(Duration duration) {
     try {
       _selfWidth = context.size.width;
-      final double progressTotalWidth =
-          context.size.width - _getHorizontalMargin() * 2;
+      final double progressTotalWidth = context.size.width - _getHorizontalMargin() * 2;
       _progressWidth = (progressTotalWidth * widget.progressPercent) / 100;
       _bufferedWidth = (progressTotalWidth * widget.bufferedPercent) / 100;
 
@@ -203,11 +173,9 @@ class BallPainter extends CustomPainter {
       ..color = Colors.white
       ..strokeCap = StrokeCap.round
       ..strokeWidth = 5;
-    canvas.drawCircle(
-        Offset(size.width / 2, size.height / 2), ballSize / 2, paint);
+    canvas.drawCircle(Offset(size.width / 2, size.height / 2), ballSize / 2, paint);
   }
 
   @override
-  bool shouldRepaint(BallPainter oldDelegate) =>
-      oldDelegate.ballSize != ballSize;
+  bool shouldRepaint(BallPainter oldDelegate) => oldDelegate.ballSize != ballSize;
 }

@@ -15,11 +15,6 @@ class PageCommonState extends State<PageCommon> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      height: double.infinity,
-      child: Center(
-        child: Text("${widget.pageName ?? ""}榜单"),
-      ),
-    );
+        width: double.infinity, height: double.infinity, child: Center(child: Text("${widget.pageName ?? ""}榜单")));
   }
 }

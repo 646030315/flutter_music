@@ -16,9 +16,8 @@ class MainAppBar extends StatefulWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => Size.fromHeight(statusBarHeight +
-      TITLE_BAR_HEIGHT +
-      (bottom?.preferredSize?.height ?? 0.0));
+  Size get preferredSize =>
+      Size.fromHeight(statusBarHeight + TITLE_BAR_HEIGHT + (bottom?.preferredSize?.height ?? 0.0));
 }
 
 class MainAppBarState extends State<MainAppBar> {
@@ -31,79 +30,53 @@ class MainAppBarState extends State<MainAppBar> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: Color(0xFFE61A1A),
-      ),
-      padding: EdgeInsets.only(top: widget.statusBarHeight),
-      height: widget.preferredSize.height,
-      child: Column(
-        children: <Widget>[
+        decoration: BoxDecoration(
+          color: Color(0xFFE61A1A),
+        ),
+        padding: EdgeInsets.only(top: widget.statusBarHeight),
+        height: widget.preferredSize.height,
+        child: Column(children: <Widget>[
           Container(
-            height: TITLE_BAR_HEIGHT,
-            child: Row(
-              children: <Widget>[
+              height: TITLE_BAR_HEIGHT,
+              child: Row(children: <Widget>[
                 InkWell(
-                  onTap: _handleDrawerOpen,
-                  child: Container(
-                    width: 40,
-                    alignment: Alignment.centerLeft,
-                    padding: const EdgeInsets.only(left: 5, right: 5),
-                    margin: const EdgeInsets.only(left: 11),
-                    child: Image.asset("ic_menu.png",
-                        width: 30, height: 30, alignment: Alignment.center),
-                  ),
-                ),
+                    onTap: _handleDrawerOpen,
+                    child: Container(
+                        width: 40,
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.only(left: 5, right: 5),
+                        margin: const EdgeInsets.only(left: 11),
+                        child: Image.asset("ic_menu.png", width: 30, height: 30, alignment: Alignment.center))),
                 Expanded(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      InkWell(
-                        onTap: () => setState(() {
-                          _selectedTab = SelectedTabType.MUSIC;
-                        }),
-                        child: Image.asset(_getTabImage(SelectedTabType.MUSIC),
-                            width: 60, height: 60, alignment: Alignment.center),
-                      ),
-                      InkWell(
-                        onTap: () => setState(() {
-                          _selectedTab = SelectedTabType.FRIEND;
-                        }),
-                        child: Image.asset(_getTabImage(SelectedTabType.FRIEND),
-                            width: 60, height: 60, alignment: Alignment.center),
-                      ),
-                      InkWell(
-                        onTap: () => setState(() {
-                          _selectedTab = SelectedTabType.DISCOVER;
-                        }),
-                        child: Image.asset(
-                            _getTabImage(SelectedTabType.DISCOVER),
-                            width: 60,
-                            height: 60,
-                            alignment: Alignment.center),
-                      ),
-                    ],
-                  ),
-                ),
+                    child: Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+                  InkWell(
+                      onTap: () => setState(() {
+                            _selectedTab = SelectedTabType.MUSIC;
+                          }),
+                      child: Image.asset(_getTabImage(SelectedTabType.MUSIC),
+                          width: 60, height: 60, alignment: Alignment.center)),
+                  InkWell(
+                      onTap: () => setState(() {
+                            _selectedTab = SelectedTabType.FRIEND;
+                          }),
+                      child: Image.asset(_getTabImage(SelectedTabType.FRIEND),
+                          width: 60, height: 60, alignment: Alignment.center)),
+                  InkWell(
+                      onTap: () => setState(() {
+                            _selectedTab = SelectedTabType.DISCOVER;
+                          }),
+                      child: Image.asset(_getTabImage(SelectedTabType.DISCOVER),
+                          width: 60, height: 60, alignment: Alignment.center))
+                ])),
                 Container(
-                  alignment: Alignment.centerRight,
-                  padding: const EdgeInsets.only(right: 16),
-                  child: GestureDetector(
-                    onTap: _onSearchClick,
-                    child: Image.asset("icon_search.png",
-                        width: 25, height: 25, alignment: Alignment.center),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            color: Colors.white,
-            height: widget.bottom.preferredSize.height,
-            child: widget.bottom,
-          ),
-        ],
-      ),
-    );
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.only(right: 16),
+                    child: GestureDetector(
+                        onTap: _onSearchClick,
+                        child: Image.asset("icon_search.png", width: 25, height: 25, alignment: Alignment.center)))
+              ])),
+          Container(color: Colors.white, height: widget.bottom.preferredSize.height, child: widget.bottom)
+        ]));
   }
 
   _getTabImage(SelectedTabType type) {

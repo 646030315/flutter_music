@@ -9,11 +9,8 @@ class PageMain extends StatefulWidget {
   }
 }
 
-class PageMainState extends State<PageMain>
-    with SingleTickerProviderStateMixin {
+class PageMainState extends State<PageMain> with SingleTickerProviderStateMixin {
   int _permissionState = PERMISSION_NONE;
-
-  int _selectedIndex = 0;
 
   @override
   void initState() {
@@ -40,14 +37,8 @@ class PageMainState extends State<PageMain>
 
     if (_permissionState == PERMISSION_GRANT) {
       return Column(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: <Widget>[
-          Divider(
-            height: 1,
-            color: Color(0xFFE0E0E0),
-          ),
-        ],
-      );
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[Divider(height: 1, color: Color(0xFFE0E0E0))]);
     } else {
       return Text(WRITE_PERMISSION_LACK_WARN);
     }
@@ -55,8 +46,7 @@ class PageMainState extends State<PageMain>
 
   /// 权限检测，查看是否需要弹框请求用户权限
   _checkPermissions() async {
-    PermissionStatus status = await PermissionHandler()
-        .checkPermissionStatus(PermissionGroup.storage);
+    PermissionStatus status = await PermissionHandler().checkPermissionStatus(PermissionGroup.storage);
 
     if (status != PermissionStatus.granted) {
       if (status == PermissionStatus.neverAskAgain) {

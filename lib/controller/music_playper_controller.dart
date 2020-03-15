@@ -96,8 +96,8 @@ class MusicPlayerController {
         _onPlayingError(audioPath);
         break;
       default:
-        throw UnimplementedError(
-            "${call.method} was invoked but isn't implemented by PlatformViewsService");
+        nLog("${call.method} was invoked but isn't implemented by PlatformViewsService");
+        break;
     }
     return null;
   }

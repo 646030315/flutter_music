@@ -30,24 +30,18 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
     _checkPermissions();
 
     nLog("PageEuropeAndAmericaState initState");
-    widget.musicPlayerController
-        ?.addOnMusicLoadCompleteListener(_onMusicLoadComplete);
-    widget.musicPlayerController
-        ?.addOnMusicPlayingChangeListener(_onMusicPlayingStateChange);
-    widget.musicPlayerController
-        ?.addOnMusicPlayingErrorListener(_onMusicPlayingError);
+    widget.musicPlayerController?.addOnMusicLoadCompleteListener(_onMusicLoadComplete);
+    widget.musicPlayerController?.addOnMusicPlayingChangeListener(_onMusicPlayingStateChange);
+    widget.musicPlayerController?.addOnMusicPlayingErrorListener(_onMusicPlayingError);
   }
 
   @override
   void dispose() {
     super.dispose();
 
-    widget.musicPlayerController
-        ?.removeOnMusicLoadCompleteListener(_onMusicLoadComplete);
-    widget.musicPlayerController
-        ?.removeOnMusicPlayingChangeListener(_onMusicPlayingStateChange);
-    widget.musicPlayerController
-        ?.removeOnMusicPlayingErrorListener(_onMusicPlayingError);
+    widget.musicPlayerController?.removeOnMusicLoadCompleteListener(_onMusicLoadComplete);
+    widget.musicPlayerController?.removeOnMusicPlayingChangeListener(_onMusicPlayingStateChange);
+    widget.musicPlayerController?.removeOnMusicPlayingErrorListener(_onMusicPlayingError);
   }
 
   void _onMusicLoadComplete(List<Map<String, dynamic>> songList) {
@@ -56,8 +50,7 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
     });
   }
 
-  void _onMusicPlayingStateChange(
-      bool isPlaying, int index, Map<String, dynamic> song) {
+  void _onMusicPlayingStateChange(bool isPlaying, int index, Map<String, dynamic> song) {
     nLog("_onMusicPlayingStateChange isPlaying : $isPlaying , song : $song");
 
     setState(() {
@@ -76,8 +69,7 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
   /// 权限检测，查看是否需要弹框请求用户权限
   _checkPermissions() async {
     if (_permissionState != PERMISSION_GRANT) {
-      PermissionStatus status = await PermissionHandler()
-          .checkPermissionStatus(PermissionGroup.storage);
+      PermissionStatus status = await PermissionHandler().checkPermissionStatus(PermissionGroup.storage);
 
       if (status != PermissionStatus.granted) {
         if (status == PermissionStatus.neverAskAgain) {
@@ -115,72 +107,44 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: Stack(
-        children: <Widget>[
-          Divider(
-            height: 1,
-            color: Color(0xFFFAFAFA),
-          ),
-          Container(
-            margin: EdgeInsets.only(top: 1),
-            child: ListView.builder(
-                itemCount: _songs.length,
-                itemBuilder: (context, index) {
-                  return _getItemView(context, index);
-                }),
-          ),
-        ],
-      ),
-    );
+        child: Stack(children: <Widget>[
+      Divider(height: 1, color: Color(0xFFFAFAFA)),
+      Container(
+          margin: EdgeInsets.only(top: 1),
+          child: ListView.builder(
+              itemCount: _songs.length,
+              itemBuilder: (context, index) {
+                return _getItemView(context, index);
+              }))
+    ]));
   }
 
   Widget _getItemView(BuildContext context, int index) {
     return GestureDetector(
-      onTap: () => _onItemClick(index),
-      child: Container(
-        color: Colors.white,
-        height: 60,
-        child: ListTile(
-          title: Text(
-            _songs[index]["songName"],
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style:
-                TextStyle(color: _getItemTitleTextColor(index), fontSize: 16),
-          ),
-          subtitle: Text(
-            "${_songs[index]["singerName"]} - ${_songs[index]["album"]}",
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-                color: _getItemSubTitleTextColor(index), fontSize: 12),
-          ),
-          trailing: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                _getDuration(index),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: 14,
-                    color: _playingIndex == index ? themeColor : Colors.grey),
-              ),
-            ],
-          ),
-          leading: Container(
-            width: 40,
-            alignment: Alignment.center,
-            child: Text(
-              "${index + 1}",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: 20,
-                  color: _playingIndex == index ? themeColor : Colors.grey),
-            ),
-          ),
-        ),
-      ),
-    );
+        onTap: () => _onItemClick(index),
+        child: Container(
+            color: Colors.white,
+            height: 60,
+            child: ListTile(
+                title: Text(_songs[index]["songName"],
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: _getItemTitleTextColor(index), fontSize: 16)),
+                subtitle: Text("${_songs[index]["singerName"]} - ${_songs[index]["album"]}",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: _getItemSubTitleTextColor(index), fontSize: 12)),
+                trailing: Column(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+                  Text(_getDuration(index),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 14, color: _playingIndex == index ? themeColor : Colors.grey))
+                ]),
+                leading: Container(
+                    width: 40,
+                    alignment: Alignment.center,
+                    child: Text("${index + 1}",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 20, color: _playingIndex == index ? themeColor : Colors.grey))))));
   }
 
   /// 获取标题文字颜色

@@ -5,7 +5,6 @@ import 'package:flutter/widgets.dart';
 import 'package:n_music/customwidget/progress_bar.dart';
 import 'package:n_music/customwidget/adjustable_bottom_sheet.dart';
 import 'package:n_music/play/page_play_bottom_sheet.dart';
-import 'package:n_music/util/toast.dart';
 import 'package:n_music/util/constants.dart';
 import 'package:n_music/util/n_log.dart';
 import 'package:n_music/play/page_play.dart';
@@ -36,11 +35,9 @@ class BottomPlayBarState extends State<BottomPlayBar> {
 
     nLog("BottomPlayBarState initState");
 
-    widget.musicPlayerController
-        ?.addOnMusicPlayingChangeListener(_onMusicPlayingStateChange);
+    widget.musicPlayerController?.addOnMusicPlayingChangeListener(_onMusicPlayingStateChange);
 
-    widget.musicPlayerController
-        ?.addOnMusicProgressListener(_onMusicProgressUpdate);
+    widget.musicPlayerController?.addOnMusicProgressListener(_onMusicProgressUpdate);
   }
 
   @override
@@ -48,14 +45,11 @@ class BottomPlayBarState extends State<BottomPlayBar> {
     super.dispose();
 
     nLog("BottomPlayBarState dispose");
-    widget.musicPlayerController
-        ?.removeOnMusicPlayingChangeListener(_onMusicPlayingStateChange);
-    widget.musicPlayerController
-        ?.removeOnMusicProgressListener(_onMusicProgressUpdate);
+    widget.musicPlayerController?.removeOnMusicPlayingChangeListener(_onMusicPlayingStateChange);
+    widget.musicPlayerController?.removeOnMusicProgressListener(_onMusicProgressUpdate);
   }
 
-  void _onMusicPlayingStateChange(
-      bool isPlaying, int index, Map<String, dynamic> song) {
+  void _onMusicPlayingStateChange(bool isPlaying, int index, Map<String, dynamic> song) {
     setState(() {
       _isPlaying = isPlaying;
     });
@@ -66,108 +60,63 @@ class BottomPlayBarState extends State<BottomPlayBar> {
       _progress = progress * 100 ~/ duration;
       _buffered = buffered * 100 ~/ duration;
 
-      nLog(
-          "_onMusicProgressUpdate _progress : $_progress, _buffered: $_buffered");
+      nLog("_onMusicProgressUpdate _progress : $_progress, _buffered: $_buffered");
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: _onJumpToPlayPage,
-      child: Container(
-          color: bottomBarColor,
-          height: BOTTOM_BAR_HEIGHT,
-          child: Stack(
-            alignment: AlignmentDirectional.bottomStart,
-            children: <Widget>[
+        onTap: _onJumpToPlayPage,
+        child: Container(
+            color: bottomBarColor,
+            height: BOTTOM_BAR_HEIGHT,
+            child: Stack(alignment: AlignmentDirectional.bottomStart, children: <Widget>[
               Container(
-                padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    CircleAvatar(
-                      radius: 20,
-                      backgroundImage: AssetImage(AVATAR_URI),
-                    ),
+                  padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+                  child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                    CircleAvatar(radius: 20, backgroundImage: AssetImage(AVATAR_URI)),
                     Expanded(
-                      child: Container(
-                        margin: EdgeInsets.only(left: 10),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            Text(
-                              widget.playingSong["songName"],
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style:
-                                  TextStyle(color: Colors.black, fontSize: 16),
-                            ),
-                            Text(
-                              "${widget.playingSong["singerName"]} - ${widget.playingSong["album"]}",
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style:
-                                  TextStyle(color: Colors.grey, fontSize: 12),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                        child: Container(
+                            margin: EdgeInsets.only(left: 10),
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  Text(widget.playingSong["songName"],
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(color: Colors.black, fontSize: 16)),
+                                  Text("${widget.playingSong["singerName"]} - ${widget.playingSong["album"]}",
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(color: Colors.grey, fontSize: 12))
+                                ]))),
                     GestureDetector(
-                      onTap: _onSongListClick,
-                      child: Container(
-                        width: 40,
-                        child: Image.asset("playbar_btn_playlist.png"),
-                      ),
-                    ),
+                        onTap: _onSongListClick,
+                        child: Container(width: 40, child: Image.asset("playbar_btn_playlist.png"))),
                     GestureDetector(
-                      onTap: _onPauseResumeClick,
-                      child: Container(
-                        width: 40,
-                        child: Image.asset(!_isPlaying
-                            ? "playbar_btn_play.png"
-                            : "playbar_btn_pause.png"),
-                      ),
-                    ),
+                        onTap: _onPauseResumeClick,
+                        child: Container(
+                            width: 40,
+                            child: Image.asset(!_isPlaying ? "playbar_btn_play.png" : "playbar_btn_pause.png"))),
                     GestureDetector(
-                      onTap: _onNextClick,
-                      child: Container(
-                        width: 40,
-                        child: Image.asset("playbar_btn_next.png"),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              ProgressBar(
-                needDrag: false,
-                progressPercent: _progress,
-                bufferedPercent: _buffered,
-              ),
-            ],
-          )),
-    );
+                        onTap: _onNextClick, child: Container(width: 40, child: Image.asset("playbar_btn_next.png")))
+                  ])),
+              ProgressBar(needDrag: false, progressPercent: _progress, bufferedPercent: _buffered)
+            ])));
   }
 
   _onJumpToPlayPage() async {
-    final result = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => PagePlay(
-            musicPlayerController: widget.musicPlayerController,
-          ),
-        ));
+    final result = await Navigator.push(context,
+        MaterialPageRoute(builder: (context) => PagePlay(musicPlayerController: widget.musicPlayerController)));
 
     nLog("result from page PagePlay : $result");
   }
 
   /// 展示当前的播放列表
   _onSongListClick() {
-    showAdjustableModalBottomSheet(
-        context: context,
-        builder: (_) => PagePlayBottomSheet(widget.musicPlayerController));
+    showAdjustableModalBottomSheet(context: context, builder: (_) => PagePlayBottomSheet(widget.musicPlayerController));
   }
 
   /// 暂停或者恢复播放，根据当前状态
