@@ -52,6 +52,8 @@ class AudioPlayerManager private constructor() : Player.EventListener {
 
     private var mOperationType = OPERATION_NONE
 
+    private var _shouldStarted = false
+
     private val progressHandler = Handler(Looper.getMainLooper())
     private val progressRunnable: Runnable = object : Runnable {
         override fun run() {
@@ -113,6 +115,7 @@ class AudioPlayerManager private constructor() : Player.EventListener {
         mPlayer!!.addListener(this)
         // 操作类型复位到none状态
         mOperationType = OPERATION_NONE
+        _shouldStarted = false
     }
 
     /**
@@ -173,14 +176,15 @@ class AudioPlayerManager private constructor() : Player.EventListener {
      * 正在播放状态变化
      */
     override fun onIsPlayingChanged(isPlaying: Boolean) {
-        Log.d(TAG, "onIsPlayingChanged isPlaying : $isPlaying")
+        Log.d(TAG, "onIsPlayingChanged isPlaying : $isPlaying, playWhenReady : ${mPlayer?.playWhenReady}")
         playingStateChangeData.postValue(isPlaying)
         progressHandler.removeCallbacks(progressRunnable)
         if (isPlaying) {
             progressHandler.post(progressRunnable)
         } else {
-            if (mOperationType > OPERATION_PAUSE) {
-                // 在没有任何人为操作而暂停的情况视为音频文件有问题
+            if (mOperationType > OPERATION_PAUSE && mPlayer?.playWhenReady == true && _shouldStarted) {
+                // 状态为_shouldStarted说明资源已经准备好了，并且playWhenReady为true应该是需要播放了
+                // 在这种请开给你下，没有任何人为操作而暂停的情况视为音频文件有问题
                 onMusicPlayingError()
             }
         }
@@ -234,10 +238,11 @@ class AudioPlayerManager private constructor() : Player.EventListener {
      */
     private fun onStart() {
         Log.d(TAG, "onStart")
+        _shouldStarted = true
     }
 
     private fun onComplete() {
-        Log.d(TAG, "onStart")
+        Log.d(TAG, "onComplete")
         progressHandler.removeCallbacks(progressRunnable)
         mPlayer?.apply {
             removeListener(this@AudioPlayerManager)

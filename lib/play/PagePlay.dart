@@ -2,6 +2,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:n_music/customwidget/ProgressBar.dart';
+import 'package:n_music/customwidget/adjustable_bottom_sheet.dart';
+import 'package:n_music/play/PagePlayBottomSheet.dart';
 import 'package:n_music/util/Constants.dart';
 import 'package:n_music/controller/MusicPlayerController.dart';
 import 'package:n_music/util/NLog.dart';
@@ -9,6 +11,7 @@ import 'package:n_music/play/PlayAppBar.dart';
 import 'dart:math' as math;
 
 import 'package:n_music/util/TimeUtils.dart';
+import 'package:n_music/customwidget/adjustable_bottom_sheet.dart';
 
 class PagePlay extends StatefulWidget {
   final MusicPlayerController musicPlayerController;
@@ -273,12 +276,20 @@ class PagePlayState extends State<PagePlay>
     widget.musicPlayerController.nextSong();
   }
 
-  void _songListClick() {}
+  void _songListClick() {
+    showAdjustableModalBottomSheet(
+        context: context,
+        builder: (_) => PagePlayBottomSheet(widget.musicPlayerController));
+  }
 
   void _onMusicPlayingStateChange(
       bool isPlaying, int index, Map<String, dynamic> song) {
     nLog("_onMusicPlayingStateChange isPlaying : $isPlaying , song : $song");
-
+    if (isPlaying) {
+      controller.repeat();
+    } else {
+      controller.stop(canceled: false);
+    }
     setState(() {});
   }
 

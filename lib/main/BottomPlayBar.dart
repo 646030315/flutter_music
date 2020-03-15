@@ -3,6 +3,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:n_music/customwidget/ProgressBar.dart';
+import 'package:n_music/customwidget/adjustable_bottom_sheet.dart';
+import 'package:n_music/play/PagePlayBottomSheet.dart';
 import 'package:n_music/util/Toast.dart';
 import 'package:n_music/util/Constants.dart';
 import 'package:n_music/util/NLog.dart';
@@ -163,7 +165,9 @@ class BottomPlayBarState extends State<BottomPlayBar> {
 
   /// 展示当前的播放列表
   _onSongListClick() {
-    Toast.show(context, widget.musicPlayerController?.switchLoopMode());
+    showAdjustableModalBottomSheet(
+        context: context,
+        builder: (_) => PagePlayBottomSheet(widget.musicPlayerController));
   }
 
   /// 暂停或者恢复播放，根据当前状态

@@ -43,10 +43,17 @@ class ProgressBarState extends State<ProgressBar> {
     WidgetsBinding.instance.addPostFrameCallback(_afterBuild);
 
     return GestureDetector(
-      onHorizontalDragDown: _onDragDown,
-      onHorizontalDragStart: _onDragStart,
-      onHorizontalDragEnd: _onDragEnd,
-      onHorizontalDragUpdate: _onDragUpdate,
+      onHorizontalDragDown: _onHorizontalDragDown,
+      onHorizontalDragStart: _onHorizontalDragStart,
+      onHorizontalDragEnd: _onHorizontalDragEnd,
+      onHorizontalDragUpdate: _onHorizontalDragUpdate,
+
+      onPanDown: _onPanDown,
+      onPanStart: _onPanStart,
+      onPanEnd: _onPanEnd,
+      onPanUpdate: _onPanUpdate,
+
+
       child: Stack(
         children: <Widget>[
           Container(
@@ -88,6 +95,22 @@ class ProgressBarState extends State<ProgressBar> {
     );
   }
 
+  _onPanDown(DragDownDetails details){
+    nLog("_onPanDown details.x : ${details.localPosition.dx}");
+  }
+
+  _onPanStart(DragStartDetails details){
+    nLog("_onPanStart details.x : ${details.localPosition.dx}");
+  }
+
+  _onPanEnd(DragEndDetails details){
+    nLog("_onPanEnd");
+  }
+
+  _onPanUpdate(DragUpdateDetails details){
+    nLog("_onPanUpdate details.x : ${details.localPosition.dx}");
+  }
+
   double _getHorizontalMargin() {
     return widget.needDrag ? _horizontalMargin : 0;
   }
@@ -116,22 +139,22 @@ class ProgressBarState extends State<ProgressBar> {
           );
   }
 
-  _onDragDown(DragDownDetails details) {
-    nLog("_onDragStart x : ${details.localPosition.dx}");
+  _onHorizontalDragDown(DragDownDetails details) {
+    nLog("_onHorizontalDragStart x : ${details.localPosition.dx}");
     _isDragging = true;
     _onDragX = _getDragX(details.localPosition.dx);
     setState(() {});
   }
 
-  _onDragStart(DragStartDetails details) {
-    nLog("_onDragStart x : ${details.localPosition.dx}");
+  _onHorizontalDragStart(DragStartDetails details) {
+    nLog("_onHorizontalDragStart x : ${details.localPosition.dx}");
     _isDragging = true;
     _onDragX = _getDragX(details.localPosition.dx);
     setState(() {});
   }
 
-  _onDragEnd(DragEndDetails details) {
-    nLog("_onDragEnd details : $details");
+  _onHorizontalDragEnd(DragEndDetails details) {
+    nLog("_onHorizontalDragEnd details : $details");
     _isDragging = false;
 
     final double seekToPercent =
@@ -141,9 +164,9 @@ class ProgressBarState extends State<ProgressBar> {
     _onDragX = 0;
   }
 
-  _onDragUpdate(DragUpdateDetails details) {
+  _onHorizontalDragUpdate(DragUpdateDetails details) {
     nLog(
-        "_onDragUpdate localX : ${details.localPosition.dx}, globalX : ${details.globalPosition.dx}");
+        "_onHorizontalDragUpdate localX : ${details.localPosition.dx}, globalX : ${details.globalPosition.dx}");
     _onDragX = _getDragX(details.localPosition.dx);
     setState(() {});
   }
