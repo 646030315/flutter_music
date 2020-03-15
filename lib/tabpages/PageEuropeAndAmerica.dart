@@ -142,7 +142,6 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
         color: Colors.white,
         height: 60,
         child: ListTile(
-          selected: _playingIndex == index,
           title: Text(
             _songs[index]["songName"],
             maxLines: 1,
@@ -169,20 +168,16 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
               ),
             ],
           ),
-          leading: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Container(
-                padding: EdgeInsets.only(left: 5),
-                child: Text(
-                  "${index + 1}",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontSize: 18,
-                      color: _playingIndex == index ? themeColor : Colors.grey),
-                ),
-              ),
-            ],
+          leading: Container(
+            width: 40,
+            alignment: Alignment.center,
+            child: Text(
+              "${index + 1}",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: 20,
+                  color: _playingIndex == index ? themeColor : Colors.grey),
+            ),
           ),
         ),
       ),
@@ -191,26 +186,16 @@ class PageEuropeAndAmericaState extends State<PageEuropeAndAmerica> {
 
   /// 获取标题文字颜色
   _getItemTitleTextColor(int index) {
-    if (_songs[index]["audio_broken"] ?? false) {
-      return Color(0xFFBDBDBD);
-    }
     return _playingIndex == index ? themeColor : Colors.black;
   }
 
   /// 获取子标题文字颜色
   _getItemSubTitleTextColor(int index) {
-    if (_songs[index]["audio_broken"] ?? false) {
-      return Color(0xFFBDBDBD);
-    }
     return _playingIndex == index ? themeColor : Colors.grey;
   }
 
   /// item点击监听
   _onItemClick(int position) {
-    if(_songs[position]["audio_broken"] ?? false){
-      Toast.show(context, "音频文件可能已经损坏了，无法播放");
-      return;
-    }
     _playingIndex = position;
     widget.musicPlayerController?.playSong(position);
   }
