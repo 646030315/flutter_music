@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:n_music/tabpages/PageCommon.dart';
-import 'package:n_music/tabpages/PageEuropeAndAmerica.dart';
+import 'package:n_music/tabpages/page_common.dart';
+import 'package:n_music/tabpages/page_europe_and_america.dart';
 
 const double AVATAR_SIZE = 60;
 const double BLUR_SIGMA_X = 10;

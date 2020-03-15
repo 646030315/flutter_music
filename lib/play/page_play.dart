@@ -1,16 +1,16 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:n_music/customwidget/ProgressBar.dart';
+import 'package:n_music/customwidget/progress_bar.dart';
 import 'package:n_music/customwidget/adjustable_bottom_sheet.dart';
-import 'package:n_music/play/PagePlayBottomSheet.dart';
-import 'package:n_music/util/Constants.dart';
-import 'package:n_music/controller/MusicPlayerController.dart';
-import 'package:n_music/util/NLog.dart';
-import 'package:n_music/play/PlayAppBar.dart';
+import 'package:n_music/play/page_play_bottom_sheet.dart';
+import 'package:n_music/util/constants.dart';
+import 'package:n_music/controller/music_playper_controller.dart';
+import 'package:n_music/util/n_log.dart';
+import 'package:n_music/play/play_app_bar.dart';
 import 'dart:math' as math;
 
-import 'package:n_music/util/TimeUtils.dart';
+import 'package:n_music/util/time_utils.dart';
 import 'package:n_music/customwidget/adjustable_bottom_sheet.dart';
 
 class PagePlay extends StatefulWidget {

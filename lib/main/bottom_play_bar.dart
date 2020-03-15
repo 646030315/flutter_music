@@ -2,15 +2,15 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:n_music/customwidget/ProgressBar.dart';
+import 'package:n_music/customwidget/progress_bar.dart';
 import 'package:n_music/customwidget/adjustable_bottom_sheet.dart';
-import 'package:n_music/play/PagePlayBottomSheet.dart';
-import 'package:n_music/util/Toast.dart';
-import 'package:n_music/util/Constants.dart';
-import 'package:n_music/util/NLog.dart';
-import 'package:n_music/play/PagePlay.dart';
-import 'package:n_music/controller/MusicPlayerController.dart';
-import '../controller/MusicPlayerController.dart';
+import 'package:n_music/play/page_play_bottom_sheet.dart';
+import 'package:n_music/util/toast.dart';
+import 'package:n_music/util/constants.dart';
+import 'package:n_music/util/n_log.dart';
+import 'package:n_music/play/page_play.dart';
+import 'package:n_music/controller/music_playper_controller.dart';
+import '../controller/music_playper_controller.dart';
 
 class BottomPlayBar extends StatefulWidget {
   final Map<String, dynamic> playingSong;

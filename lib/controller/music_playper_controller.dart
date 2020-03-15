@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
-import 'package:n_music/loop/LoopMode.dart';
-import 'package:n_music/util/NLog.dart';
+import 'package:n_music/loop/loop_mode.dart';
+import 'package:n_music/util/n_log.dart';
 
 typedef OnMusicLoadCompleteListener = void Function(
     List<Map<String, dynamic>> songList);

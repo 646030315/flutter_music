@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:n_music/util/Constants.dart';
+import 'package:n_music/util/constants.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class PageMain extends StatefulWidget {

@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:n_music/controller/MusicPlayerController.dart';
+import 'package:n_music/controller/music_playper_controller.dart';
 
 abstract class LoopMode {
   /// 获取当前循环模式下的下一首

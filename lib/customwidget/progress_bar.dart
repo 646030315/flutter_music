@@ -3,8 +3,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:n_music/util/Constants.dart';
-import 'package:n_music/util/NLog.dart';
+import 'package:n_music/util/constants.dart';
+import 'package:n_music/util/n_log.dart';
 
 typedef OnDragEndListener = void Function(double percent);
 

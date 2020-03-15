@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:n_music/util/TimeUtils.dart';
-import 'package:n_music/util/Toast.dart';
-import 'package:n_music/util/Constants.dart';
-import 'package:n_music/controller/MusicPlayerController.dart';
-import 'package:n_music/util/NLog.dart';
+import 'package:n_music/util/time_utils.dart';
+import 'package:n_music/util/constants.dart';
+import 'package:n_music/controller/music_playper_controller.dart';
+import 'package:n_music/util/n_log.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 typedef OnMusicPlay = void Function(Map<String, dynamic> song);
